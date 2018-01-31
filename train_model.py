@@ -1,34 +1,72 @@
 """
 this code will train on kitti data set
 """
-from __future__ import division
-import random
-import pprint
+# from __future__ import division      # https://mail.python.org/pipermail/tutor/2008-March/060886.html
+import argparse                      # Read console arguments
+import json                          # Use to import config file
+from os import listdir
+from os.path import join, isdir, isfile      # To create file path
 import sys
-import time
-import numpy as np
-import pickle
-from keras import backend as K
-from keras.optimizers import Adam, SGD, RMSprop
-from keras.layers import Input
-from keras.models import Model
-from keras_frcnn import config, data_generators
-from keras_frcnn import losses as losses_fn
-import keras_frcnn.roi_helpers as roi_helpers
-from keras.utils import generic_utils
-import os
-from keras_frcnn import resnet as nn
-from keras_frcnn.simple_parser import get_data
+# import random
+# import pprint
+# import sys
+# import time
+# import numpy as np
+# import pickle
+# from keras import backend as K
+# from keras.optimizers import Adam, SGD, RMSprop
+# from keras.layers import Input
+# from keras.models import Model
+# from keras_frcnn import config, data_generators
+# from keras_frcnn import losses as losses_fn
+# import keras_frcnn.roi_helpers as roi_helpers
+# from keras.utils import generic_utils
+# from keras_frcnn import resnet as nn
+# from keras_frcnn.simple_parser import get_data
 
 
-def train_kitti():
+def train(args_):
+# 1. set the right model to train
+# 2. Load the default config file
+# 3. Load the files
+#    ↳ If don't exist raise error to ask user to do it
+# 4. Print information about model which is going to be trained
+# 5. Launch the training
+#
+#  TODO in config file allow the ability to remove Keras warnings
+
+    config_path = join('models', args_.model_name, args_.config)
+
+    list_models = [n for n in listdir('models') if isdir(join('models', n))]
+
+    # Check if the subfolder for the model exist in the folder ./models/
+    if not args_.model_name in list_models:
+        sys.exit('ERROR: '+ args_.model_name +' doesn\'t correspond to any subfolders in the \"./models/\" folder.')
+    # Check if the config file exists
+    elif not isfile(config_path):
+        sys.exit('ERROR: Can\'t find ' + config_path)
+
+    # Import config file from the model subfolder
+    try:
+        cfg = json.load(open(config_path))
+    except ValueError:
+        sys.exit('ERROR: Decoding ' + config_path + ' has failed.')
+
+    # TODO only print useful information at this moment
+    print(json.dumps(cfg, indent=2))
+
+
+    # TODO Define path to save model Weights
+    #   "model_weights": "model_trained/faster_rcnn.resnet50.hdf5",
+    # TODO Define dataset path
+    # TODO define name of the new file to save the config file
+
+    # TODO create the JSON file with the right structure directly for the list
+    #
     # config for data argument
     cfg = config.Config()
 
-    cfg.use_horizontal_flips = True
-    cfg.use_vertical_flips = True
-    cfg.rot_90 = True
-    cfg.num_rois = 32
+    # Need to import right package so check if package imported correspond to config file and raise error if not
     cfg.base_net_weights = os.path.join('./model/', nn.get_weight_path())
 
     # TODO: the only file should to be change for other data to train
@@ -251,6 +289,14 @@ def train_kitti():
                 continue
     print('Training complete, exiting.')
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('model_name', help='Name of the folder containing the model.')
+    parser.add_argument('--config', '-c', default='config.json' ,help='Configuration file in the model folder.')
+    parser.add_argument('--dataset', '-d', default='dataset_simple_label.txt' ,help='Dataset file in the datasets folder.')
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
-    train_kitti()
+    args = parse_args()
+    train(args)
