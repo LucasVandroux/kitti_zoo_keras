@@ -5,6 +5,9 @@ class Config:
     def __init__(self):
         self.verbose = True
 
+        # name of the models
+        self.model_name = 'faster_rcnn'
+
         self.network = 'resnet50'
 
         # setting for data augmentation

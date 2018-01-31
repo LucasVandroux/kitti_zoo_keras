@@ -1,0 +1,38 @@
+{
+  "verbose": 1,
+  "model_name": "faster_rcnn",
+  "network": "resnet50",
+  "train": {
+    "num_epochs": 3000
+  },
+  "img": {
+    "min_side": 600,
+    "channel_mean": [103.939, 116.779, 123.68],
+    "scaling_factor": 1.0
+  },
+  "data_augmentation": {
+    "use_horizontal_flips": 1,
+    "use_vertical_flips": 1,
+    "rot_90": 1
+  },
+  "anchors": {
+    "box_scales": [128, 256, 512],
+    "box_ratios": [[1, 1], [1, 2], [2, 1]]
+  },
+  "rpn": {
+    "num_rois": 32,
+    "stride": 16,
+    "min_overlap": 0.3,
+    "max_overlap": 0.7
+  },
+  "std": {
+    "scaling": 4.0,
+    "classifier_regr": [8.0, 8.0, 4.0, 4.0]
+  },
+  "classifier_roi": {
+    "min_overlap": 0.1,
+    "max_overlap": 0.5
+  },
+  "balanced_classes": 0,
+  "class_mapping": "None"
+}
