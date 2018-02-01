@@ -7,7 +7,7 @@ import sys
 import json
 
 
-def generate(img_dir_, label_dir_):
+def generate_json():
     """
     convert kitti data into a single txt file, with this format:
     Pedestrian 0.00 0 -0.20 712.40 143.00 810.73 307.92 1.89 0.48 1.20 1.84 1.47 8.41 0.01
@@ -17,6 +17,10 @@ def generate(img_dir_, label_dir_):
     :param label_dir_:
     :return:
     """
+
+    # Extension for images files and labels
+    IMG_EXT = '.png'
+    LBL_EXT = '.txt'
 
     # Use to convert the types to number to decrease the size of the file
     CLASS_MAPPING = {
@@ -31,35 +35,43 @@ def generate(img_dir_, label_dir_):
         'DontCare': 8
     }
 
-    # Symlinks path for the main dataset
+    # Path for the main dataset (also works with symbolic links but not MacOS aliases!)
     PATH_MAIN_IMAGES = path.join('main','images')
     PATH_MAIN_LABELS = path.join('main','labels')
 
-    # Symlinks path for the additional dataset (only for training)
+    # Path for the additional dataset (also works with symbolic links but not MacOS aliases!)
     PATH_ADDITIONAL_IMAGES = path.join('additional','images')
     PATH_ADDITIONAL_LABELS = path.join('additional','labels')
+
+    # Initialize dictionary to hold info about the dataset
+    dataset_info = {}
 
     # --- MAIN DATASET ---
     if not path.exists(PATH_MAIN_IMAGES):
         sys.exit('ERROR: Couldn\'t find ' + PATH_MAIN_IMAGES)
     elif path.islink(PATH_MAIN_IMAGES):
-        PATH_MAIN_IMAGES = readlink(SYMLINK_MAIN_IMAGES)
+        PATH_MAIN_IMAGES = readlink(PATH_MAIN_IMAGES)
 
-    list_main_images = [f for f in listdir(PATH_MAIN_IMAGES) if f.endswith('.png')]
+    set_main_images_names = set([f[:-len(IMG_EXT)] for f in listdir(PATH_MAIN_IMAGES) if f.endswith(IMG_EXT)])
 
-    print()
+    if not path.exists(PATH_MAIN_LABELS):
+        sys.exit('ERROR: Couldn\'t find ' + PATH_MAIN_LABELS)
+    elif path.islink(PATH_MAIN_LABELS):
+        PATH_MAIN_LABELS = readlink(PATH_MAIN_LABELS)
 
-    try:
-        path_main_dataset_images = os.readlink(SYMLINK_MAIN_IMAGES)
-    except ValueError:
-        sys.exit('ERROR: Main dataset images foler impossible to recover from sysmlink ' + SYMLINK_MAIN_IMAGES)
+    set_main_labels_names = set([f[:-len(LBL_EXT)] for f in listdir(PATH_MAIN_LABELS) if f.endswith(LBL_EXT)])
 
-    try:
-        path_main_dataset_images = os.readlink(SYMLINK_MAIN_IMAGES)
-    except ValueError:
-        sys.exit('ERROR: Main dataset images foler impossible to recover from sysmlink ' + SYMLINK_MAIN_IMAGES)
+    # Remove the images without a label or the contrary
+    list_valid_data_names = list(set_main_images_names & set_main_labels_names)
 
-    path_main_dataset_labels = os.readlink(join('main','labels'))
+    # Add data to
+    dataset_info['num_main_data'] = len(list_valid_data_names)
+    dataset_info['path_main_images'] = PATH_MAIN_IMAGES
+    dataset_info['path_main_labels'] = PATH_MAIN_LABELS
+    dataset_info['image_extension'] = IMG_EXT
+    dataset_info['label_extension'] = LBL_EXT
+
+    print(json.dumps(dataset_info, indent=2))
 
     # Check if there is an additional dataset to add
 
@@ -89,6 +101,4 @@ def generate(img_dir_, label_dir_):
 
 
 if __name__ == '__main__':
-    img_dir = sys.argv[1]
-    label_dir = sys.argv[2]
-    generate(img_dir, label_dir)
+    generate_json()
