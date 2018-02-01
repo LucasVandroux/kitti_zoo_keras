@@ -26,6 +26,17 @@ import sys
 
 
 def train(args_):
+"""
+Initiate the training of a model based on a config file.
+
+Parameters:
+model_name     Name of the model/subfolder to train
+config         Config file (.json) in the model's subfolder
+dataset        File (.json) containing the description of the dataset
+
+Returns:
+TODO
+"""
 # 1. set the right model to train
 # 2. Load the default config file
 # 3. Load the files
@@ -35,6 +46,11 @@ def train(args_):
 #
 #  TODO in config file allow the ability to remove Keras warnings
 
+    # ===================================
+    # === LOAD & SAVE NEW CONFIG FILE ===
+    # ===================================
+    # The chosen model should have a subfolder containing all the file related to it in the models folder
+    # Plus the .json file should be in the model's subfolder
     config_path = join('models', args_.model_name, args_.config)
 
     list_models = [n for n in listdir('models') if isdir(join('models', n))]
@@ -52,19 +68,17 @@ def train(args_):
     except ValueError:
         sys.exit('ERROR: Decoding ' + config_path + ' has failed.')
 
-    # TODO only print useful information at this moment
-    print(json.dumps(cfg, indent=2))
+    # TODO Define dataset path
+
+
+    # TODO create the JSON file with the right structure directly for the list
+    #
+
 
 
     # TODO Define path to save model Weights
     #   "model_weights": "model_trained/faster_rcnn.resnet50.hdf5",
-    # TODO Define dataset path
     # TODO define name of the new file to save the config file
-
-    # TODO create the JSON file with the right structure directly for the list
-    #
-    # config for data argument
-    cfg = config.Config()
 
     # Need to import right package so check if package imported correspond to config file and raise error if not
     cfg.base_net_weights = os.path.join('./model/', nn.get_weight_path())
@@ -72,6 +86,13 @@ def train(args_):
     # TODO: the only file should to be change for other data to train
     cfg.model_path = './model/kitti_frcnn_last.hdf5'
     cfg.simple_label_file = 'kitti_simple_label.txt'
+
+    # TODO only print useful information at this moment
+    print(json.dumps(cfg, indent=2))
+
+    # ========================
+    # === LOAD THE DATASET ===
+    # ========================
 
     all_images, classes_count, class_mapping = get_data(cfg.simple_label_file)
 
