@@ -42,7 +42,7 @@ def get_files(folder_path, file_extension):
     # Get set of files from the folder
     set_files = set([f[:-len(file_extension)] for f in listdir(path) if f.endswith(file_extension)])
 
-    print('   ↳ ' + str(len(set_files)) + ' files with extension \'' + file_extension + '\' in ' + path)
+    print(' ↳ ' + str(len(set_files)) + ' files with extension \'' + file_extension + '\' in ' + path)
 
     return path, set_files
 
@@ -204,7 +204,7 @@ def generate_json():
     dataset_info['label_extension'] = LBL_EXT
 
     # --- MAIN DATASET ---
-    print('Importing Main Dataset...')
+    print('----- IMPORT MAIN DATASET -----')
     # Get sets of images and labels from the folders
     path_main_img, set_main_img = get_files(PATH_MAIN_IMAGES, IMG_EXT)
     path_main_lbl, set_main_lbl = get_files(PATH_MAIN_LABELS, LBL_EXT)
@@ -222,36 +222,19 @@ def generate_json():
     dataset_info['num_main_class'] = num_main_class
     dataset_info['num_main_set'] = num_main_set
 
-    print(num_main_class)
-    print(num_main_set)
-    print(list_main_data[0:3])
+    print(' ↳ Classes repartition: ' + str(num_main_class))
+    print(' ↳ Sets repartition: ' + str(num_main_set))
+    print('SUCCESS: Main dataset imported.')
+    print('-------------------------------')
 
     # Check if there is an additional dataset to add
 
     # TODO count the number of each
 
-    if not os.path.exists(label_dir_):
-        print('label dir: {} doest not exist'.format(label_dir_))
-        exit(0)
-    all_label_files = [i for i in os.listdir(label_dir_) if i.endswith('.txt')]
-    print('got {} label files.'.format(len(all_label_files)))
+    # TODO Analyse the image: shape + average for each channel
 
-    all_img_lables = []
+    # TODO save the file as a .json file
 
-    target_file = open('kitti_simple_label.txt', 'w')
-    for label_file_name in all_label_files:
-        label_file = os.path.join(label_dir_, label_file_name)
-
-        with open(label_file, 'r') as f:
-            for l in f.readlines():
-                class_name, _, _, _, x1, y1, x2, y2, _, _, _, _, _, _, _ = l.strip().split(' ')
-                target_file.write('{},{},{},{},{},{}\n'.format(
-                    os.path.join(img_dir_, label_file_name.replace('txt', 'png')),
-                                                               x1, y1, x2, y2, class_name))
-
-    target_file.close()
-    print('convert finished.')
-
-
+# TODO chose the name of the export file
 if __name__ == '__main__':
     generate_json()
