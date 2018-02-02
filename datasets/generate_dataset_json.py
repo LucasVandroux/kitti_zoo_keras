@@ -24,7 +24,7 @@ def test_path(path_to_test):
         return readlink(path_to_test)
     return path_to_test
 
-def import_set(folder_path, file_extension):
+def get_files(folder_path, file_extension):
     """
     Import name of files with a certain extension from specific folder.
 
@@ -77,7 +77,6 @@ def import_bboxes(file_path, class_mapping):
 
             # Simplify KITTI labels file
             if len(line_parsed) == 5:
-
                 bbox_dict['x1']    = float(line_parsed[1])
                 bbox_dict['y1']    = float(line_parsed[2])
                 bbox_dict['x2']    = float(line_parsed[3])
@@ -97,6 +96,57 @@ def import_bboxes(file_path, class_mapping):
 
     return count_classes, list_bboxes
 
+def import_data(list_names, path_labels, name_dataset, dataset_info):
+    """
+    Import all the data in a list
+
+    Parameters:
+    list_names      -- List containing all the name of the data
+    path_labels     -- Path to the folder containing the labels' files
+    name_dataset    -- Name of the dataset (e.g. 'main', 'plus', ...)
+    dataset_info    -- Dictionary containing the info on the dataset
+
+    Returns:
+    list_data       -- List of dictionary containing all the info on data and bboxes
+    num_class       -- Repartition of the classes in the dataset
+    num_set         -- Repartition of the sets in the dataset
+
+    """
+    print('Importing labels from ' + str(len(list_names)) + ' files:')
+
+    # Get useful variables from dataset_info
+    img_ext = dataset_info['image_extension']
+    lbl_ext = dataset_info['label_extension']
+    class_mapping = dataset_info['class_mapping']
+    set_repartition = dataset_info['set_repartition'][name_dataset]
+
+    # Initialize variables to store values to return
+    list_data = []
+    num_class = np.zeros((len(class_mapping),), dtype=int)
+    num_set = np.zeros((3,), dtype=int)
+
+    for idx in trange(len(list_names)):
+        img_dict = {'dataset': name_dataset}
+
+        img_dict['filename'] = list_names[idx] + img_ext
+
+        # Imoprt the labels relative to the current image
+        label_path = path.join(path_labels, (list_names[idx] + lbl_ext))
+        num_classes, bboxes = import_bboxes(label_path, class_mapping)
+
+        img_dict['bboxes'] = bboxes
+
+        img_dict['num_classes'] = num_classes
+        img_dict['set'] = np.random.choice(3, 1, p=set_repartition)[0]
+
+        # Tracking repartition of classes and sets
+        num_class += num_classes
+        num_set[img_dict['set']] += 1
+
+        # Add data to the global list
+        list_data.append(img_dict)
+
+    return list_data, num_class, num_set
 
 def generate_json():
     """
@@ -126,6 +176,12 @@ def generate_json():
         'DontCare': 8
     }
 
+    # Repartition of the data for each dataset [train, dev, test]
+    SET_REPARTITION = {
+        'main': [1/3, 1/3, 1/3],
+        'plus': [1, 0, 0]
+        }
+
     # Path for the main dataset (also works with symbolic links but not MacOS aliases!)
     PATH_MAIN_IMAGES = path.join('main','images')
     PATH_MAIN_LABELS = path.join('main','labels')
@@ -142,47 +198,33 @@ def generate_json():
 
     # Add global variable to dataset_info
     dataset_info['class_mapping'] = CLASS_MAPPING
+    dataset_info['set_mapping'] = {0: 'train', 1: 'dev', 2: 'test'}
+    dataset_info['set_repartition'] = SET_REPARTITION
     dataset_info['image_extension'] = IMG_EXT
     dataset_info['label_extension'] = LBL_EXT
 
     # --- MAIN DATASET ---
     print('Importing Main Dataset...')
     # Get sets of images and labels from the folders
-    path_main_img, set_main_img = import_set(PATH_MAIN_IMAGES, IMG_EXT)
-    path_main_lbl, set_main_lbl = import_set(PATH_MAIN_LABELS, LBL_EXT)
+    path_main_img, set_main_img = get_files(PATH_MAIN_IMAGES, IMG_EXT)
+    path_main_lbl, set_main_lbl = get_files(PATH_MAIN_LABELS, LBL_EXT)
 
     # Remove the images without a label or the contrary
-    list_main_data = sorted(list(set_main_img & set_main_lbl))
+    list_main_names = sorted(list(set_main_img & set_main_lbl))
 
     # Add data to info
-    dataset_info['num_main_data'] = len(list_main_data)
+    dataset_info['num_main_data'] = len(list_main_names)
     dataset_info['path_main_images'] = path_main_img
     dataset_info['path_main_labels'] = path_main_lbl
 
+    list_main_data, num_main_class, num_main_set = import_data(list_main_names, path_main_lbl, 'main', dataset_info)
 
-    print('Importing labels from ' + str(len(list_main_data)) + ' files:')
+    dataset_info['num_main_class'] = num_main_class
+    dataset_info['num_main_set'] = num_main_set
 
-    class_repartition_main = np.zeros((len(CLASS_MAPPING),), dtype=int)
-
-    for idx in trange(len(list_main_data)):
-        img_dict = {}
-
-        img_dict['dataset'] = 'main'
-        img_dict['filepath'] = path.join(path_main_img, (list_main_data[idx] + IMG_EXT))
-
-        label_path = path.join(path_main_lbl, (list_main_data[idx] + LBL_EXT))
-
-        num_classes, bboxes = import_bboxes(label_path, CLASS_MAPPING)
-
-        img_dict['bboxes'] = bboxes
-        img_dict['num_classes'] = num_classes
-
-        class_repartition_main += num_classes
-
-        list_data.append(img_dict)
-
-    print(class_repartition_main)
-    print(list_data[0:3])
+    print(num_main_class)
+    print(num_main_set)
+    print(list_main_data[0:3])
 
     # Check if there is an additional dataset to add
 
