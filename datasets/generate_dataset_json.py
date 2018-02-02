@@ -6,6 +6,44 @@ import os.path as path      # To create file path
 import sys
 import json
 
+def test_path(path_to_test):
+    """
+    Test if a path exists and convert a symbolic link in a real path.
+
+    Parameters:
+    path_to_test      path to get(can be a symbolic link but no aliases)
+
+    Returns:
+    path              working path
+    """
+    if not path.exists(path_to_test):
+        sys.exit('ERROR: Couldn\'t find ' + path_to_test)
+    elif path.islink(path_to_test):
+        return readlink(path_to_test)
+    return path_to_test
+
+def import_set(folder_path, file_extension):
+    """
+    Import name of files with a certain extension from specific folder.
+
+    Parameters:
+    folder_path      path to the folder containing the files (can be a symbolic link)
+    file_extension   extension of the files to extract
+
+    Returns:
+    path             path of the used folder
+    set_files        set containing the name of the files without their extensions
+    """
+    # Test path to see if data is accessible
+    path = test_path(folder_path)
+
+    # Get set of files from the folder
+    set_files = set([f[:-len(file_extension)] for f in listdir(path) if f.endswith(file_extension)])
+
+    print('   ↳ ' + str(len(set_files)) + ' files with extension \'' + file_extension + '\' in ' + path)
+
+    return path, set_files
+
 
 def generate_json():
     """
@@ -47,27 +85,18 @@ def generate_json():
     dataset_info = {}
 
     # --- MAIN DATASET ---
-    if not path.exists(PATH_MAIN_IMAGES):
-        sys.exit('ERROR: Couldn\'t find ' + PATH_MAIN_IMAGES)
-    elif path.islink(PATH_MAIN_IMAGES):
-        PATH_MAIN_IMAGES = readlink(PATH_MAIN_IMAGES)
-
-    set_main_images_names = set([f[:-len(IMG_EXT)] for f in listdir(PATH_MAIN_IMAGES) if f.endswith(IMG_EXT)])
-
-    if not path.exists(PATH_MAIN_LABELS):
-        sys.exit('ERROR: Couldn\'t find ' + PATH_MAIN_LABELS)
-    elif path.islink(PATH_MAIN_LABELS):
-        PATH_MAIN_LABELS = readlink(PATH_MAIN_LABELS)
-
-    set_main_labels_names = set([f[:-len(LBL_EXT)] for f in listdir(PATH_MAIN_LABELS) if f.endswith(LBL_EXT)])
+    print('Importing Main Dataset...')
+    # Get sets of images and labels from the folders
+    path_main_img, set_main_img = import_set(PATH_MAIN_IMAGES, IMG_EXT)
+    path_main_lbl, set_main_lbl = import_set(PATH_MAIN_LABELS, LBL_EXT)
 
     # Remove the images without a label or the contrary
-    list_valid_data_names = list(set_main_images_names & set_main_labels_names)
+    list_main_data = list(set_main_img & set_main_lbl)
 
-    # Add data to
-    dataset_info['num_main_data'] = len(list_valid_data_names)
-    dataset_info['path_main_images'] = PATH_MAIN_IMAGES
-    dataset_info['path_main_labels'] = PATH_MAIN_LABELS
+    # Add data to info
+    dataset_info['num_main_data'] = len(list_main_data)
+    dataset_info['path_main_images'] = path_main_img
+    dataset_info['path_main_labels'] = path_main_lbl
     dataset_info['image_extension'] = IMG_EXT
     dataset_info['label_extension'] = LBL_EXT
 
