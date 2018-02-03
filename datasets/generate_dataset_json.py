@@ -1,6 +1,7 @@
 """
 This will load all the information from the labels file of the main dataset and the additional dataset in a global json file.
 """
+import argparse                      # Read console arguments
 import os
 import os.path as path      # To create file path
 import sys
@@ -148,7 +149,7 @@ def import_data(list_names, path_labels, name_dataset, dataset_info):
 
     return list_data, num_class, num_set
 
-def generate_json():
+def generate_json(export_file_path):
     """
     convert kitti data into a single txt file, with this format:
     Pedestrian 0.00 0 -0.20 712.40 143.00 810.73 307.92 1.89 0.48 1.20 1.84 1.47 8.41 0.01
@@ -265,10 +266,8 @@ def generate_json():
 
     # --- SAVE FILE ---
     dataset_info['data'] = list_data
-    export_file_path = 'dataset.json'
 
     print('Saving...')
-    
     with open(export_file_path, 'w') as outfile:
         json.dump(dataset_info, outfile)
 
@@ -276,5 +275,18 @@ def generate_json():
 
 # TODO Global variables in fct to have them at the beginning of the file
 # TODO chose the name of the export file
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--export_path', '-e', default='dataset.json', help='Path to save .json file containing the dataset.')
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    generate_json()
+    args = parse_args()
+    file_path = args.export_path
+
+    if path.exists(file_path):
+        sys.exit('ERROR: \'' + file_path + '\' already exists.')
+
+    generate_json(file_path)
