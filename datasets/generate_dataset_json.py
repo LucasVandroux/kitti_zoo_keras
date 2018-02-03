@@ -1,13 +1,50 @@
 """
-This will load all the information from the labels file of the main dataset and the additional dataset in a global json file.
+IMPORTANT: Run this script from its folder (datasets/)
+
+Load all the information from the labels file of the main dataset and the additional dataset in a global json file.
 """
-import argparse                      # Read console arguments
+import argparse                     # Read console arguments
 import os
-import os.path as path      # To create file path
+import os.path as path
 import sys
 import json
 from tqdm import tqdm, trange       # Use to make the progress bar
 import numpy as np
+
+class Import_Config:
+    def __init__(self):
+        # Repartition of the data for each dataset [train, dev, test]
+        self.set_repartition = {
+            'main': [1/3, 1/3, 1/3],
+            'addi': [1, 0, 0]
+            }
+
+        # Better to create a symbolic link in the designated folder than changing the variables
+
+        # Path for the main dataset (also works with symbolic links but not MacOS aliases!)
+        self.path_main_images = path.join(os.getcwd(), 'main','images')
+        self.path_main_labels = path.join(os.getcwd(), 'main','labels')
+
+        # Path for the additional dataset (also works with symbolic links but not MacOS aliases!)
+        self.path_addi_images = path.join(os.getcwd(), 'additional','images')
+        self.path_addi_labels = path.join(os.getcwd(), 'additional','labels')
+
+        # Extension for images files and labels
+        self.img_ext = '.png'
+        self.lbl_ext = '.txt'
+
+        # Use to convert the types to number to decrease the size of the file
+        self.class_mapping = {
+            'Car': 0,
+            'Van': 1,
+            'Truck': 2,
+            'Pedestrian': 3,
+            'Person_sitting': 4,
+            'Cyclist': 5,
+            'Tram': 6,
+            'Misc': 7,
+            'DontCare': 8
+        }
 
 def test_path(path_to_test):
     """
@@ -150,6 +187,7 @@ def import_data(list_names, path_labels, name_dataset, dataset_info):
     return list_data, num_class, num_set
 
 def generate_json(export_file_path):
+    #TODO Write description
     """
     convert kitti data into a single txt file, with this format:
     Pedestrian 0.00 0 -0.20 712.40 143.00 810.73 307.92 1.89 0.48 1.20 1.84 1.47 8.41 0.01
@@ -159,53 +197,24 @@ def generate_json(export_file_path):
     :param label_dir_:
     :return:
     """
-
-    # Extension for images files and labels
-    IMG_EXT = '.png'
-    LBL_EXT = '.txt'
-
-    # Use to convert the types to number to decrease the size of the file
-    CLASS_MAPPING = {
-        'Car': 0,
-        'Van': 1,
-        'Truck': 2,
-        'Pedestrian': 3,
-        'Person_sitting': 4,
-        'Cyclist': 5,
-        'Tram': 6,
-        'Misc': 7,
-        'DontCare': 8
-    }
-
-    # Repartition of the data for each dataset [train, dev, test]
-    SET_REPARTITION = {
-        'main': [1/3, 1/3, 1/3],
-        'addi': [1, 0, 0]
-        }
-
-    # Path for the main dataset (also works with symbolic links but not MacOS aliases!)
-    PATH_MAIN_IMAGES = path.join(os.getcwd(), 'main','images')
-    PATH_MAIN_LABELS = path.join(os.getcwd(), 'main','labels')
-
-    # Path for the additional dataset (also works with symbolic links but not MacOS aliases!)
-    PATH_ADDI_IMAGES = path.join(os.getcwd(), 'additional','images')
-    PATH_ADDI_LABELS = path.join(os.getcwd(), 'additional','labels')
+    # Get the variables used for the config
+    cfg = Import_Config()
 
     # Initialize dictionary to hold info about the dataset
     dataset_info = {}
 
     # Add global variable to dataset_info
-    dataset_info['class_mapping'] = CLASS_MAPPING
+    dataset_info['class_mapping'] = cfg.class_mapping
     dataset_info['set_mapping'] = {0: 'train', 1: 'dev', 2: 'test'}
-    dataset_info['set_repartition'] = SET_REPARTITION
-    dataset_info['image_extension'] = IMG_EXT
-    dataset_info['label_extension'] = LBL_EXT
+    dataset_info['set_repartition'] = cfg.set_repartition
+    dataset_info['image_extension'] = cfg.img_ext
+    dataset_info['label_extension'] = cfg.lbl_ext
 
     # --- MAIN DATASET ---
     print('----- IMPORT MAIN DATASET -----')
     # Get sets of images and labels from the folders
-    path_main_img, set_main_img = get_files(PATH_MAIN_IMAGES, IMG_EXT)
-    path_main_lbl, set_main_lbl = get_files(PATH_MAIN_LABELS, LBL_EXT)
+    path_main_img, set_main_img = get_files(cfg.path_main_images, cfg.img_ext)
+    path_main_lbl, set_main_lbl = get_files(cfg.path_main_labels, cfg.lbl_ext)
 
     # Remove the images without a label or the contrary
     list_main_names = sorted(list(set_main_img & set_main_lbl))
@@ -227,15 +236,15 @@ def generate_json(export_file_path):
 
     # --- ADDITIONAL DATASET ---
     print('----- IMPORT ADDITIONAL DATASET -----')
-    if not path.exists(PATH_ADDI_IMAGES) and not path.exists(PATH_ADDI_LABELS):
+    if not path.exists(cfg.path_addi_images) and not path.exists(cfg.path_addi_labels):
         print('No Additional Dataset found:')
-        print(' ↳ Not Found: ' + PATH_ADDI_IMAGES)
-        print(' ↳ Not Found: ' + PATH_ADDI_LABELS)
+        print(' ↳ Not Found: ' + cfg.path_addi_images)
+        print(' ↳ Not Found: ' + cfg.path_addi_labels)
 
     else:
         # Get sets of images and labels from the folders
-        path_addi_img, set_addi_img = get_files(PATH_ADDI_IMAGES, IMG_EXT)
-        path_addi_lbl, set_addi_lbl = get_files(PATH_ADDI_LABELS, LBL_EXT)
+        path_addi_img, set_addi_img = get_files(cfg.path_addi_images, cfg.img_ext)
+        path_addi_lbl, set_addi_lbl = get_files(cfg.path_addi_labels, cfg.lbl_ext)
 
         # Remove the images without a label or the contrary
         list_addi_names = sorted(list(set_addi_img & set_addi_lbl))
@@ -274,7 +283,6 @@ def generate_json(export_file_path):
     print('SUCCESS: Dataset information saved to ' + export_file_path)
 
 # TODO Global variables in fct to have them at the beginning of the file
-# TODO chose the name of the export file
 
 def parse_args():
     parser = argparse.ArgumentParser()
