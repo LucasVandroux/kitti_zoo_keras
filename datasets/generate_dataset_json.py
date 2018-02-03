@@ -136,8 +136,8 @@ def import_data(list_names, path_labels, name_dataset, dataset_info):
 
         img_dict['bboxes'] = bboxes
 
-        img_dict['num_classes'] = num_classes
-        img_dict['set'] = np.random.choice(3, 1, p=set_repartition)[0]
+        img_dict['num_classes'] = num_classes.tolist()
+        img_dict['set'] = int(np.random.choice(3, 1, p=set_repartition)[0])
 
         # Tracking repartition of classes and sets
         num_class += num_classes
@@ -216,8 +216,8 @@ def generate_json():
 
     list_data, num_main_class, num_main_set = import_data(list_main_names, path_main_lbl, 'main', dataset_info)
 
-    dataset_info['num_main_class'] = num_main_class
-    dataset_info['num_main_set'] = num_main_set
+    dataset_info['num_main_class'] = num_main_class.tolist()
+    dataset_info['num_main_set'] = num_main_set.tolist()
 
     print(' ↳ Classes repartition: ' + str(num_main_class))
     print(' ↳ Sets repartition: ' + str(num_main_set))
@@ -248,8 +248,8 @@ def generate_json():
 
         list_data += list_addi_data
 
-        dataset_info['num_addi_class'] = num_addi_class
-        dataset_info['num_addi_set'] = num_addi_set
+        dataset_info['num_addi_class'] = num_addi_class.tolist()
+        dataset_info['num_addi_set'] = num_addi_set.tolist()
 
         print(' ↳ Classes repartition: ' + str(num_addi_class))
         print(' ↳ Sets repartition: ' + str(num_addi_set))
@@ -257,10 +257,22 @@ def generate_json():
 
     print('-------------------------------------')
 
-
+    # --- MERGING INFORMATION ---
+    dataset_info['num_data'] = len(list_data)
+    dataset_info['num_class'] = (num_main_class + num_addi_class).tolist()
+    dataset_info['num_set'] = (num_main_set + num_addi_set).tolist()
     # TODO Analyse the image: shape + average for each channel
 
-    # TODO save the file as a .json file
+    # --- SAVE FILE ---
+    dataset_info['data'] = list_data
+    export_file_path = 'dataset.json'
+
+    print('Saving...')
+    
+    with open(export_file_path, 'w') as outfile:
+        json.dump(dataset_info, outfile)
+
+    print('SUCCESS: Dataset information saved to ' + export_file_path)
 
 # TODO Global variables in fct to have them at the beginning of the file
 # TODO chose the name of the export file
