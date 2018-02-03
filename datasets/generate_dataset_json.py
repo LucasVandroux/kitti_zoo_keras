@@ -311,7 +311,7 @@ def generate_json(export_file_path):
 
     print('Saving...')
     with open(export_file_path, 'w') as outfile:
-        json.dump(dataset, outfile, indent=2)
+        json.dump(dataset, outfile)
 
     print('SUCCESS: Dataset information saved to ' + export_file_path)
 
