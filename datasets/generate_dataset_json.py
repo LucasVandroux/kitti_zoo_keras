@@ -1,7 +1,7 @@
 """
 This will load all the information from the labels file of the main dataset and the additional dataset in a global json file.
 """
-from os import listdir, readlink
+import os
 import os.path as path      # To create file path
 import sys
 import json
@@ -21,7 +21,7 @@ def test_path(path_to_test):
     if not path.exists(path_to_test):
         sys.exit('ERROR: Couldn\'t find ' + path_to_test)
     elif path.islink(path_to_test):
-        return readlink(path_to_test)
+        return os.readlink(path_to_test)
     return path_to_test
 
 def get_files(folder_path, file_extension):
@@ -40,7 +40,7 @@ def get_files(folder_path, file_extension):
     path = test_path(folder_path)
 
     # Get set of files from the folder
-    set_files = set([f[:-len(file_extension)] for f in listdir(path) if f.endswith(file_extension)])
+    set_files = set([f[:-len(file_extension)] for f in os.listdir(path) if f.endswith(file_extension)])
 
     print(' ↳ ' + str(len(set_files)) + ' files with extension \'' + file_extension + '\' in ' + path)
 
@@ -103,7 +103,7 @@ def import_data(list_names, path_labels, name_dataset, dataset_info):
     Parameters:
     list_names      -- List containing all the name of the data
     path_labels     -- Path to the folder containing the labels' files
-    name_dataset    -- Name of the dataset (e.g. 'main', 'plus', ...)
+    name_dataset    -- Name of the dataset (e.g. 'main', 'addi', ...)
     dataset_info    -- Dictionary containing the info on the dataset
 
     Returns:
@@ -179,22 +179,19 @@ def generate_json():
     # Repartition of the data for each dataset [train, dev, test]
     SET_REPARTITION = {
         'main': [1/3, 1/3, 1/3],
-        'plus': [1, 0, 0]
+        'addi': [1, 0, 0]
         }
 
     # Path for the main dataset (also works with symbolic links but not MacOS aliases!)
-    PATH_MAIN_IMAGES = path.join('main','images')
-    PATH_MAIN_LABELS = path.join('main','labels')
+    PATH_MAIN_IMAGES = path.join(os.getcwd(), 'main','images')
+    PATH_MAIN_LABELS = path.join(os.getcwd(), 'main','labels')
 
     # Path for the additional dataset (also works with symbolic links but not MacOS aliases!)
-    PATH_ADDITIONAL_IMAGES = path.join('additional','images')
-    PATH_ADDITIONAL_LABELS = path.join('additional','labels')
+    PATH_ADDI_IMAGES = path.join(os.getcwd(), 'additional','images')
+    PATH_ADDI_LABELS = path.join(os.getcwd(), 'additional','labels')
 
     # Initialize dictionary to hold info about the dataset
     dataset_info = {}
-
-    # Initialize list to contains all the data
-    list_data = []
 
     # Add global variable to dataset_info
     dataset_info['class_mapping'] = CLASS_MAPPING
@@ -217,7 +214,7 @@ def generate_json():
     dataset_info['path_main_images'] = path_main_img
     dataset_info['path_main_labels'] = path_main_lbl
 
-    list_main_data, num_main_class, num_main_set = import_data(list_main_names, path_main_lbl, 'main', dataset_info)
+    list_data, num_main_class, num_main_set = import_data(list_main_names, path_main_lbl, 'main', dataset_info)
 
     dataset_info['num_main_class'] = num_main_class
     dataset_info['num_main_set'] = num_main_set
@@ -227,14 +224,45 @@ def generate_json():
     print('SUCCESS: Main dataset imported.')
     print('-------------------------------')
 
-    # Check if there is an additional dataset to add
+    # --- ADDITIONAL DATASET ---
+    print('----- IMPORT ADDITIONAL DATASET -----')
+    if not path.exists(PATH_ADDI_IMAGES) and not path.exists(PATH_ADDI_LABELS):
+        print('No Additional Dataset found:')
+        print(' ↳ Not Found: ' + PATH_ADDI_IMAGES)
+        print(' ↳ Not Found: ' + PATH_ADDI_LABELS)
 
-    # TODO count the number of each
+    else:
+        # Get sets of images and labels from the folders
+        path_addi_img, set_addi_img = get_files(PATH_ADDI_IMAGES, IMG_EXT)
+        path_addi_lbl, set_addi_lbl = get_files(PATH_ADDI_LABELS, LBL_EXT)
+
+        # Remove the images without a label or the contrary
+        list_addi_names = sorted(list(set_addi_img & set_addi_lbl))
+
+        # Add data to info
+        dataset_info['num_addi_data'] = len(list_addi_names)
+        dataset_info['path_addi_images'] = path_addi_img
+        dataset_info['path_addi_labels'] = path_addi_lbl
+
+        list_addi_data, num_addi_class, num_addi_set = import_data(list_addi_names, path_addi_lbl, 'addi', dataset_info)
+
+        list_data += list_addi_data
+
+        dataset_info['num_addi_class'] = num_addi_class
+        dataset_info['num_addi_set'] = num_addi_set
+
+        print(' ↳ Classes repartition: ' + str(num_addi_class))
+        print(' ↳ Sets repartition: ' + str(num_addi_set))
+        print('SUCCESS: Additional dataset imported.')
+
+    print('-------------------------------------')
+
 
     # TODO Analyse the image: shape + average for each channel
 
     # TODO save the file as a .json file
 
+# TODO Global variables in fct to have them at the beginning of the file
 # TODO chose the name of the export file
 if __name__ == '__main__':
     generate_json()
