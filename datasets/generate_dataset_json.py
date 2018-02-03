@@ -274,7 +274,7 @@ def generate_json(export_file_path):
         dataset_info['repartition_classes'] = num_main_class.tolist()
         dataset_info['repartition_sets'] = num_main_set.tolist()
 
-        dataset_info['mean_channels'] = mean_channels.tolist()
+        dataset_info['mean_channels'] = np.mean(mean_channels, axis=0).tolist()
 
     else:
         # Get sets of images and labels from the folders
