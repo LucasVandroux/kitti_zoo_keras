@@ -217,15 +217,11 @@ def import_data(list_names, name_dataset, dataset_info):
     return list_data, num_class, num_set, mean_channels
 
 def generate_json(export_file_path):
-    #TODO Write description
     """
-    convert kitti data into a single txt file, with this format:
-    Pedestrian 0.00 0 -0.20 712.40 143.00 810.73 307.92 1.89 0.48 1.20 1.84 1.47 8.41 0.01
+    Import the labels from the files and generate a .json file to save it.
 
-    type, truncated, occluded, alpha,
-    :param img_dir_:
-    :param label_dir_:
-    :return:
+    Parameters:
+    export_file_path    -- Path to save the final .json file
     """
     # Get the variables used for the config
     cfg = Import_Config()
