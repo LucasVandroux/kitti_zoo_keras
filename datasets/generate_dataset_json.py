@@ -10,6 +10,7 @@ import sys
 import json
 from tqdm import tqdm, trange       # Use to make the progress bar
 import numpy as np
+import imageio                      # To import images
 
 class Import_Config:
     def __init__(self):
@@ -134,13 +135,27 @@ def import_bboxes(file_path, class_mapping):
 
     return count_classes, list_bboxes
 
-def import_data(list_names, path_labels, name_dataset, dataset_info):
+def get_im_info(im_path):
+    """
+    Get shape and mean of each channel of an image
+
+    Parameters:
+    im_path       -- Path of the image to get the info from
+
+    Returns:
+    shape          -- Shape of the image
+    mean_channels  -- Mean value of the RGB channels
+    """
+    im = imageio.imread(im_path)
+
+    return im.shape, np.mean(im, axis=(0, 1))
+
+def import_data(list_names, name_dataset, dataset_info):
     """
     Import all the data in a list
 
     Parameters:
     list_names      -- List containing all the name of the data
-    path_labels     -- Path to the folder containing the labels' files
     name_dataset    -- Name of the dataset (e.g. 'main', 'addi', ...)
     dataset_info    -- Dictionary containing the info on the dataset
 
@@ -148,6 +163,7 @@ def import_data(list_names, path_labels, name_dataset, dataset_info):
     list_data       -- List of dictionary containing all the info on data and bboxes
     num_class       -- Repartition of the classes in the dataset
     num_set         -- Repartition of the sets in the dataset
+    mean_channels   -- Array containing all the mean of the images' channels
 
     """
     print('Importing labels from ' + str(len(list_names)) + ' files:')
@@ -156,25 +172,39 @@ def import_data(list_names, path_labels, name_dataset, dataset_info):
     img_ext = dataset_info['image_extension']
     lbl_ext = dataset_info['label_extension']
     class_mapping = dataset_info['class_mapping']
-    set_repartition = dataset_info['set_repartition'][name_dataset]
+    set_repartition = dataset_info['set_distribution'][name_dataset]
+
+    path_images = dataset_info[name_dataset]['path_images']
+    path_labels = dataset_info[name_dataset]['path_labels']
 
     # Initialize variables to store values to return
     list_data = []
     num_class = np.zeros((len(class_mapping),), dtype=int)
     num_set = np.zeros((3,), dtype=int)
+    mean_channels = np.zeros((len(list_names),3), dtype=int)
 
     for idx in trange(len(list_names)):
         img_dict = {'dataset': name_dataset}
 
         img_dict['filename'] = list_names[idx] + img_ext
 
-        # Imoprt the labels relative to the current image
+        # Get images information
+        im_shape, im_mean_channels = get_im_info(path.join(path_images, (list_names[idx] + img_ext)))
+
+        mean_channels[idx, :] = im_mean_channels
+
+        # Add image information
+        img_dict['height'] = int(im_shape[0])
+        img_dict['width'] = int(im_shape[1])
+        img_dict['mean_channels'] = im_mean_channels.tolist()
+
+        # Import the labels relative to the current image
         label_path = path.join(path_labels, (list_names[idx] + lbl_ext))
         num_classes, bboxes = import_bboxes(label_path, class_mapping)
 
         img_dict['bboxes'] = bboxes
 
-        img_dict['num_classes'] = num_classes.tolist()
+        img_dict['repartition_classes'] = num_classes.tolist()
         img_dict['set'] = int(np.random.choice(3, 1, p=set_repartition)[0])
 
         # Tracking repartition of classes and sets
@@ -184,7 +214,7 @@ def import_data(list_names, path_labels, name_dataset, dataset_info):
         # Add data to the global list
         list_data.append(img_dict)
 
-    return list_data, num_class, num_set
+    return list_data, num_class, num_set, mean_channels
 
 def generate_json(export_file_path):
     #TODO Write description
@@ -206,7 +236,7 @@ def generate_json(export_file_path):
     # Add global variable to dataset_info
     dataset_info['class_mapping'] = cfg.class_mapping
     dataset_info['set_mapping'] = {0: 'train', 1: 'dev', 2: 'test'}
-    dataset_info['set_repartition'] = cfg.set_repartition
+    dataset_info['set_distribution'] = cfg.set_repartition
     dataset_info['image_extension'] = cfg.img_ext
     dataset_info['label_extension'] = cfg.lbl_ext
 
@@ -220,14 +250,15 @@ def generate_json(export_file_path):
     list_main_names = sorted(list(set_main_img & set_main_lbl))
 
     # Add data to info
-    dataset_info['num_main_data'] = len(list_main_names)
-    dataset_info['path_main_images'] = path_main_img
-    dataset_info['path_main_labels'] = path_main_lbl
+    dataset_info['main'] = {'num_data': len(list_main_names)}
+    dataset_info['main']['path_images'] = path_main_img
+    dataset_info['main']['path_labels'] = path_main_lbl
 
-    list_data, num_main_class, num_main_set = import_data(list_main_names, path_main_lbl, 'main', dataset_info)
+    list_data, num_main_class, num_main_set, mean_channels = import_data(list_main_names, 'main', dataset_info)
 
-    dataset_info['num_main_class'] = num_main_class.tolist()
-    dataset_info['num_main_set'] = num_main_set.tolist()
+    dataset_info['main']['repartition_classes'] = num_main_class.tolist()
+    dataset_info['main']['repartition_sets'] = num_main_set.tolist()
+    dataset_info['main']['mean_channels'] = np.mean(mean_channels, axis=0).tolist()
 
     print(' ↳ Classes repartition: ' + str(num_main_class))
     print(' ↳ Sets repartition: ' + str(num_main_set))
@@ -250,16 +281,17 @@ def generate_json(export_file_path):
         list_addi_names = sorted(list(set_addi_img & set_addi_lbl))
 
         # Add data to info
-        dataset_info['num_addi_data'] = len(list_addi_names)
-        dataset_info['path_addi_images'] = path_addi_img
-        dataset_info['path_addi_labels'] = path_addi_lbl
+        dataset_info['addi'] = {'num_data': len(list_addi_names)}
+        dataset_info['addi']['path_images'] = path_addi_img
+        dataset_info['addi']['path_labels'] = path_addi_lbl
 
-        list_addi_data, num_addi_class, num_addi_set = import_data(list_addi_names, path_addi_lbl, 'addi', dataset_info)
+        list_addi_data, num_addi_class, num_addi_set, addi_mean_channels = import_data(list_addi_names, 'addi', dataset_info)
 
         list_data += list_addi_data
 
-        dataset_info['num_addi_class'] = num_addi_class.tolist()
-        dataset_info['num_addi_set'] = num_addi_set.tolist()
+        dataset_info['addi']['repartition_classes'] = num_addi_class.tolist()
+        dataset_info['addi']['repartition_sets'] = num_addi_set.tolist()
+        dataset_info['addi']['mean_channels'] = np.mean( addi_mean_channels, axis=0).tolist()
 
         print(' ↳ Classes repartition: ' + str(num_addi_class))
         print(' ↳ Sets repartition: ' + str(num_addi_set))
@@ -269,20 +301,23 @@ def generate_json(export_file_path):
 
     # --- MERGING INFORMATION ---
     dataset_info['num_data'] = len(list_data)
-    dataset_info['num_class'] = (num_main_class + num_addi_class).tolist()
-    dataset_info['num_set'] = (num_main_set + num_addi_set).tolist()
-    # TODO Analyse the image: shape + average for each channel
+    dataset_info['repartition_classes'] = (num_main_class + num_addi_class).tolist()
+    dataset_info['repartition_sets'] = (num_main_set + num_addi_set).tolist()
+
+    mean_channels = np.append(mean_channels, addi_mean_channels, axis=0)
+    dataset_info['mean_channels'] = np.mean(mean_channels, axis=0).tolist()
 
     # --- SAVE FILE ---
-    dataset_info['data'] = list_data
+    dataset = {
+        'info': dataset_info,
+        'data': list_data
+    }
 
     print('Saving...')
     with open(export_file_path, 'w') as outfile:
-        json.dump(dataset_info, outfile)
+        json.dump(dataset, outfile, indent=2)
 
     print('SUCCESS: Dataset information saved to ' + export_file_path)
-
-# TODO Global variables in fct to have them at the beginning of the file
 
 def parse_args():
     parser = argparse.ArgumentParser()
