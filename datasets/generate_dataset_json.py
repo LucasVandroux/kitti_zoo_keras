@@ -16,7 +16,7 @@ class Import_Config:
     def __init__(self):
         # Repartition of the data for each dataset [train, dev, test]
         self.set_repartition = {
-            'main': [1/3, 1/3, 1/3],
+            'main': [0.8, 0.1, 0.1],
             'addi': [1, 0, 0]
             }
 
@@ -166,8 +166,6 @@ def import_data(list_names, name_dataset, dataset_info):
     mean_channels   -- Array containing all the mean of the images' channels
 
     """
-    print('Importing labels from ' + str(len(list_names)) + ' files:')
-
     # Get useful variables from dataset_info
     img_ext = dataset_info['image_extension']
     lbl_ext = dataset_info['label_extension']
@@ -176,6 +174,9 @@ def import_data(list_names, name_dataset, dataset_info):
 
     path_images = dataset_info[name_dataset]['path_images']
     path_labels = dataset_info[name_dataset]['path_labels']
+
+    print('Importing labels from ' + str(len(list_names)) + ' files:')
+    print(' ↳ Sets distribution: ' + str(set_repartition))
 
     # Initialize variables to store values to return
     list_data = []
@@ -268,6 +269,13 @@ def generate_json(export_file_path):
         print(' ↳ Not Found: ' + cfg.path_addi_images)
         print(' ↳ Not Found: ' + cfg.path_addi_labels)
 
+        # --- FINAL INFORMATION ---
+        dataset_info['num_data'] = len(list_data)
+        dataset_info['repartition_classes'] = num_main_class.tolist()
+        dataset_info['repartition_sets'] = num_main_set.tolist()
+
+        dataset_info['mean_channels'] = mean_channels.tolist()
+
     else:
         # Get sets of images and labels from the folders
         path_addi_img, set_addi_img = get_files(cfg.path_addi_images, cfg.img_ext)
@@ -293,15 +301,15 @@ def generate_json(export_file_path):
         print(' ↳ Sets repartition: ' + str(num_addi_set))
         print('SUCCESS: Additional dataset imported.')
 
+        # --- MERGING INFORMATION ---
+        dataset_info['num_data'] = len(list_data)
+        dataset_info['repartition_classes'] = (num_main_class + num_addi_class).tolist()
+        dataset_info['repartition_sets'] = (num_main_set + num_addi_set).tolist()
+
+        mean_channels = np.append(mean_channels, addi_mean_channels, axis=0)
+        dataset_info['mean_channels'] = np.mean(mean_channels, axis=0).tolist()
+
     print('-------------------------------------')
-
-    # --- MERGING INFORMATION ---
-    dataset_info['num_data'] = len(list_data)
-    dataset_info['repartition_classes'] = (num_main_class + num_addi_class).tolist()
-    dataset_info['repartition_sets'] = (num_main_set + num_addi_set).tolist()
-
-    mean_channels = np.append(mean_channels, addi_mean_channels, axis=0)
-    dataset_info['mean_channels'] = np.mean(mean_channels, axis=0).tolist()
 
     # --- SAVE FILE ---
     dataset = {
