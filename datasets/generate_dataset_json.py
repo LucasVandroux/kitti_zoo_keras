@@ -23,12 +23,12 @@ class Import_Config:
         # Better to create a symbolic link in the designated folder than changing the variables
 
         # Path for the main dataset (also works with symbolic links but not MacOS aliases!)
-        self.path_main_images = path.join(os.getcwd(), 'main','images')
-        self.path_main_labels = path.join(os.getcwd(), 'main','labels')
+        self.path_main_images = path.join('main','images')
+        self.path_main_labels = path.join('main','labels')
 
         # Path for the additional dataset (also works with symbolic links but not MacOS aliases!)
-        self.path_addi_images = path.join(os.getcwd(), 'additional','images')
-        self.path_addi_labels = path.join(os.getcwd(), 'additional','labels')
+        self.path_addi_images = path.join('additional','images')
+        self.path_addi_labels = path.join('additional','labels')
 
         # Extension for images files and labels
         self.img_ext = '.png'
@@ -55,13 +55,13 @@ def test_path(path_to_test):
     path_to_test      -- path to get(can be a symbolic link but no aliases)
 
     Returns:
-    path              -- working path
+    path              -- working absolute path
     """
     if not path.exists(path_to_test):
         sys.exit('ERROR: Couldn\'t find ' + path_to_test)
     elif path.islink(path_to_test):
-        return os.readlink(path_to_test)
-    return path_to_test
+        return path.abspath(os.readlink(path_to_test))
+    return path.abspath(path_to_test)
 
 def get_files(folder_path, file_extension):
     """
