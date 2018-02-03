@@ -1,0 +1,584 @@
+{
+  "info": {
+    "class_mapping": {
+      "Car": 0,
+      "Van": 1,
+      "Truck": 2,
+      "Pedestrian": 3,
+      "Person_sitting": 4,
+      "Cyclist": 5,
+      "Tram": 6,
+      "Misc": 7,
+      "DontCare": 8
+    },
+    "set_mapping": {
+      "0": "train",
+      "1": "dev",
+      "2": "test"
+    },
+    "set_distribution": {
+      "main": [
+        0.8,
+        0.1,
+        0.1
+      ],
+      "addi": [
+        1,
+        0,
+        0
+      ]
+    },
+    "image_extension": ".png",
+    "label_extension": ".txt",
+    "main": {
+      "num_data": 5,
+      "path_images": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images",
+      "path_labels": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/labels",
+      "repartition_classes": [
+        6,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "repartition_sets": [
+        3,
+        2,
+        0
+      ],
+      "mean_channels": [
+        173.6,
+        172.2,
+        162.8
+      ]
+    },
+    "addi": {
+      "num_data": 5,
+      "path_images": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images",
+      "path_labels": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/labels",
+      "repartition_classes": [
+        6,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "repartition_sets": [
+        5,
+        0,
+        0
+      ],
+      "mean_channels": [
+        173.6,
+        172.2,
+        162.8
+      ]
+    },
+    "num_data": 10,
+    "repartition_classes": [
+      12,
+      0,
+      2,
+      4,
+      0,
+      2,
+      0,
+      0,
+      12
+    ],
+    "repartition_sets": [
+      8,
+      2,
+      0
+    ],
+    "mean_channels": [
+      173.6,
+      172.2,
+      162.8
+    ]
+  },
+  "data": [
+    {
+      "dataset": "main",
+      "filename": "00008.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        150.96973554460635,
+        149.9124842187747,
+        146.64314781889345
+      ],
+      "bboxes": [
+        {
+          "class": 0,
+          "x1": 869,
+          "y1": 176,
+          "x2": 1143,
+          "y2": 301
+        },
+        {
+          "class": 0,
+          "x1": 160,
+          "y1": 234,
+          "x2": 256,
+          "y2": 272
+        },
+        {
+          "class": 3,
+          "x1": 26,
+          "y1": 237,
+          "x2": 53,
+          "y2": 281
+        },
+        {
+          "class": 3,
+          "x1": 781,
+          "y1": 177,
+          "x2": 803,
+          "y2": 225
+        },
+        {
+          "class": 8,
+          "x1": 562,
+          "y1": 210,
+          "x2": 648,
+          "y2": 232
+        }
+      ],
+      "repartition_classes": [
+        2,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "set": 0
+    },
+    {
+      "dataset": "main",
+      "filename": "00025.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        178.5089495259037,
+        172.49016388354286,
+        150.89544044929687
+      ],
+      "bboxes": [
+        {
+          "class": 0,
+          "x1": 331,
+          "y1": 210,
+          "x2": 445,
+          "y2": 284
+        },
+        {
+          "class": 8,
+          "x1": 628,
+          "y1": 224,
+          "x2": 648,
+          "y2": 236
+        },
+        {
+          "class": 8,
+          "x1": 668,
+          "y1": 220,
+          "x2": 685,
+          "y2": 230
+        }
+      ],
+      "repartition_classes": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      "set": 0
+    },
+    {
+      "dataset": "main",
+      "filename": "00028.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        182.35745209062645,
+        179.00553345143098,
+        164.97018027379036
+      ],
+      "bboxes": [
+        {
+          "class": 5,
+          "x1": 642,
+          "y1": 161,
+          "x2": 669,
+          "y2": 217
+        },
+        {
+          "class": 8,
+          "x1": 562,
+          "y1": 148,
+          "x2": 579,
+          "y2": 162
+        },
+        {
+          "class": 8,
+          "x1": 810,
+          "y1": 195,
+          "x2": 837,
+          "y2": 210
+        }
+      ],
+      "repartition_classes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        2
+      ],
+      "set": 0
+    },
+    {
+      "dataset": "main",
+      "filename": "00037.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        186.74673225246553,
+        191.41930748281814,
+        194.28547130942562
+      ],
+      "bboxes": [
+        {
+          "class": 2,
+          "x1": 378,
+          "y1": 119,
+          "x2": 495,
+          "y2": 239
+        },
+        {
+          "class": 8,
+          "x1": 497,
+          "y1": 196,
+          "x2": 508,
+          "y2": 201
+        }
+      ],
+      "repartition_classes": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "set": 1
+    },
+    {
+      "dataset": "main",
+      "filename": "00089.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        172.77341552860034,
+        170.29599671119044,
+        160.75375503265892
+      ],
+      "bboxes": [
+        {
+          "class": 0,
+          "x1": 307,
+          "y1": 191,
+          "x2": 462,
+          "y2": 287
+        },
+        {
+          "class": 0,
+          "x1": 850,
+          "y1": 165,
+          "x2": 1107,
+          "y2": 289
+        },
+        {
+          "class": 0,
+          "x1": 781,
+          "y1": 185,
+          "x2": 890,
+          "y2": 241
+        }
+      ],
+      "repartition_classes": [
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "set": 1
+    },
+    {
+      "dataset": "addi",
+      "filename": "00008.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        150.96973554460635,
+        149.9124842187747,
+        146.64314781889345
+      ],
+      "bboxes": [
+        {
+          "class": 0,
+          "x1": 869,
+          "y1": 176,
+          "x2": 1143,
+          "y2": 301
+        },
+        {
+          "class": 0,
+          "x1": 160,
+          "y1": 234,
+          "x2": 256,
+          "y2": 272
+        },
+        {
+          "class": 3,
+          "x1": 26,
+          "y1": 237,
+          "x2": 53,
+          "y2": 281
+        },
+        {
+          "class": 3,
+          "x1": 781,
+          "y1": 177,
+          "x2": 803,
+          "y2": 225
+        },
+        {
+          "class": 8,
+          "x1": 562,
+          "y1": 210,
+          "x2": 648,
+          "y2": 232
+        }
+      ],
+      "repartition_classes": [
+        2,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "set": 0
+    },
+    {
+      "dataset": "addi",
+      "filename": "00025.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        178.5089495259037,
+        172.49016388354286,
+        150.89544044929687
+      ],
+      "bboxes": [
+        {
+          "class": 0,
+          "x1": 331,
+          "y1": 210,
+          "x2": 445,
+          "y2": 284
+        },
+        {
+          "class": 8,
+          "x1": 628,
+          "y1": 224,
+          "x2": 648,
+          "y2": 236
+        },
+        {
+          "class": 8,
+          "x1": 668,
+          "y1": 220,
+          "x2": 685,
+          "y2": 230
+        }
+      ],
+      "repartition_classes": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2
+      ],
+      "set": 0
+    },
+    {
+      "dataset": "addi",
+      "filename": "00028.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        182.35745209062645,
+        179.00553345143098,
+        164.97018027379036
+      ],
+      "bboxes": [
+        {
+          "class": 5,
+          "x1": 642,
+          "y1": 161,
+          "x2": 669,
+          "y2": 217
+        },
+        {
+          "class": 8,
+          "x1": 562,
+          "y1": 148,
+          "x2": 579,
+          "y2": 162
+        },
+        {
+          "class": 8,
+          "x1": 810,
+          "y1": 195,
+          "x2": 837,
+          "y2": 210
+        }
+      ],
+      "repartition_classes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        2
+      ],
+      "set": 0
+    },
+    {
+      "dataset": "addi",
+      "filename": "00037.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        186.74673225246553,
+        191.41930748281814,
+        194.28547130942562
+      ],
+      "bboxes": [
+        {
+          "class": 2,
+          "x1": 378,
+          "y1": 119,
+          "x2": 495,
+          "y2": 239
+        },
+        {
+          "class": 8,
+          "x1": 497,
+          "y1": 196,
+          "x2": 508,
+          "y2": 201
+        }
+      ],
+      "repartition_classes": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "set": 0
+    },
+    {
+      "dataset": "addi",
+      "filename": "00089.png",
+      "height": 375,
+      "width": 1242,
+      "mean_channels": [
+        172.77341552860034,
+        170.29599671119044,
+        160.75375503265892
+      ],
+      "bboxes": [
+        {
+          "class": 0,
+          "x1": 307,
+          "y1": 191,
+          "x2": 462,
+          "y2": 287
+        },
+        {
+          "class": 0,
+          "x1": 850,
+          "y1": 165,
+          "x2": 1107,
+          "y2": 289
+        },
+        {
+          "class": 0,
+          "x1": 781,
+          "y1": 185,
+          "x2": 890,
+          "y2": 241
+        }
+      ],
+      "repartition_classes": [
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "set": 0
+    }
+  ]
+}
