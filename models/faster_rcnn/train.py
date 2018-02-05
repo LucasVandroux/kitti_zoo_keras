@@ -2,12 +2,12 @@ import importlib                    # To import other modules
 import sys
 import time
 import os.path as path
-# import numpy as n
 from keras import backend as K
+from keras.layers import Input
+from keras.models import Model
+from models.faster_rcnn import config, data_generators
+# import numpy as n
 # from keras.optimizers import Adam, SGD, RMSprop
-# from keras.layers import Input
-# from keras.models import Model
-# from keras_frcnn import config, data_generators
 # from keras_frcnn import losses as losses_fn
 # import keras_frcnn.roi_helpers as roi_helpers
 # from keras.utils import generic_utils
@@ -43,7 +43,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
     rpn = nn.rpn(shared_layers, num_anchors)
 
     # Define Classifier
-    classifier = nn.classifier(shared_layers, roi_input, cfg.num_rois, nb_classes=len(classes_count), trainable=True)
+    classifier = nn.classifier(shared_layers, roi_input, cfg['rpn']['num_rois'], nb_classes=len(dataset['info']['classes_count']), trainable=True)
 
     # --- MODELS ---
     # Define Models
@@ -54,13 +54,13 @@ def train(cfg, dataset, train_imgs, test_imgs):
     model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
     # --- LOAD WEIGHTS ---
-    base_net_weights = path.join('model', cfg['model_name'], 'base_network', 'weights', nn.get_weight_path())
+    base_net_weights = path.join('models', cfg['model_name'], 'base_network', 'weights', nn.get_weight_path())
     try:
         print('Loading weights from \'' + base_net_weights + '\'...')
-        model_rpn.load_weights(cfg.model_path, by_name=True)
-        print(' ↳ SUCCESS: RPN\'s weighhts loaded.'')
-        model_classifier.load_weights(cfg.model_path, by_name=True)
-        print(' ↳ SUCCESS: Classifier\'s weighhts loaded.'')
+        model_rpn.load_weights(base_net_weights, by_name=True)
+        print(' ↳ SUCCESS: RPN\'s weighhts loaded.')
+        model_classifier.load_weights(base_net_weights, by_name=True)
+        print(' ↳ SUCCESS: Classifier\'s weighhts loaded.')
     except Exception as e:
         print(e)
         print('ERROR: Impossible to load pretrained model weights.')

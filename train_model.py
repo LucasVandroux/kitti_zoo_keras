@@ -8,7 +8,7 @@ import os
 import os.path as path               # To create file path
 import sys
 import random
-import models.faster_rcnn as faster_rcnn
+import models.faster_rcnn.train as faster_rcnn
 
 
 def train(args_):
