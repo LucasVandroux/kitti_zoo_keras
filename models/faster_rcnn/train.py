@@ -1,19 +1,32 @@
-def train():
+# import sys
+import time
+# import numpy as n
+from keras import backend as K
+# from keras.optimizers import Adam, SGD, RMSprop
+# from keras.layers import Input
+# from keras.models import Model
+# from keras_frcnn import config, data_generators
+# from keras_frcnn import losses as losses_fn
+# import keras_frcnn.roi_helpers as roi_helpers
+# from keras.utils import generic_utils
+# from keras_frcnn import resnet as nn
+
+def train(cfg, dataset, train_imgs, test_imgs):
     # TODO
     # Need to import right package so check if package imported correspond to config file and raise error if not
     # cfg.base_net_weights = os.path.join('./model/', nn.get_weight_path())
 
+    with open(cfg.config_save_file, 'wb') as config_f:
+        pickle.dump(cfg, config_f)
+        print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
+            cfg.config_save_file))
+
     data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, cfg, nn.get_img_output_length,
                                                    K.image_dim_ordering(), mode='train')
-    data_gen_val = data_generators.get_anchor_gt(val_imgs, classes_count, cfg, nn.get_img_output_length,
+    data_gen_test = data_generators.get_anchor_gt(test_imgs, classes_count, cfg, nn.get_img_output_length,
                                                  K.image_dim_ordering(), mode='val')
 
-    if K.image_dim_ordering() == 'th':
-        input_shape_img = (3, None, None)
-    else:
-        input_shape_img = (None, None, 3)
-
-    img_input = Input(shape=input_shape_img)
+    img_input = Input(shape=(None, None, 3))
     roi_input = Input(shape=(None, 4))
 
     # define the base network (resnet here, can be VGG, Inception, etc)
@@ -40,17 +53,20 @@ def train():
         print('Could not load pretrained model weights. Weights can be found in the keras application folder '
               'https://github.com/fchollet/keras/tree/master/keras/applications')
 
-    optimizer = Adam(lr=1e-5)
+    # --- Optimizer ---
+    optimizer_rpn = Adam(lr=1e-5)
     optimizer_classifier = Adam(lr=1e-5)
-    model_rpn.compile(optimizer=optimizer,
+
+    model_rpn.compile(optimizer=optimizer_rpn,
                       loss=[losses_fn.rpn_loss_cls(num_anchors), losses_fn.rpn_loss_regr(num_anchors)])
+
     model_classifier.compile(optimizer=optimizer_classifier,
                              loss=[losses_fn.class_loss_cls, losses_fn.class_loss_regr(len(classes_count) - 1)],
                              metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
     model_all.compile(optimizer='sgd', loss='mae')
 
-    epoch_length = 1000
-    num_epochs = int(cfg.num_epochs)
+    epoch_length = int(cfg['epoch_length'])
+    num_epochs = int(cfg['num_epochs'])
     iter_num = 0
 
     losses = np.zeros((epoch_length, 5))

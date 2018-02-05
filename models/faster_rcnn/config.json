@@ -1,10 +1,11 @@
 {
   "verbose": 1,
   "model_name": "faster_rcnn",
-  "network": "resnet50",
+  "base_network": "resnet50",
   "folder_descriptor": "test",
   "train": {
-    "num_epochs": 3000
+    "num_epochs": 3000,
+    "epoch_length": 1000
   },
   "img": {
     "min_side": 600,
