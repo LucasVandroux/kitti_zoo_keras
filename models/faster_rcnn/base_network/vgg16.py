@@ -15,7 +15,7 @@ from keras.engine.topology import get_source_inputs
 from keras.utils import layer_utils
 from keras.utils.data_utils import get_file
 from keras import backend as K
-from models.faster_rcnn.base_network.roi_pooling_conv import RoiPoolingConv
+from models.faster_rcnn.base_network.utils.roi_pooling_conv import RoiPoolingConv
 
 
 def get_weight_path():

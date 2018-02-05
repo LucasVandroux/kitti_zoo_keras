@@ -13,8 +13,8 @@ from keras.layers import Input, Add, Dense, Activation, Flatten, Convolution2D, 
 
 from keras import backend as K
 
-from models.faster_rcnn.base_network.roi_pooling_conv import RoiPoolingConv
-from models.faster_rcnn.base_network.fixed_batch_normalization import FixedBatchNormalization
+from models.faster_rcnn.base_network.utils.roi_pooling_conv import RoiPoolingConv
+from models.faster_rcnn.base_network.utils.fixed_batch_normalization import FixedBatchNormalization
 
 
 def get_weight_path():
