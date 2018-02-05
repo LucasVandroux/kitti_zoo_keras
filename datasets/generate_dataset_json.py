@@ -16,8 +16,8 @@ class Import_Config:
     def __init__(self):
         # Distribution of the data for each dataset [train, dev, test]
         self.sets_distribution = {
-            'main': [0.8, 0.1, 0.1],
-            'addi': [1, 0, 0]
+            'main': [0.4, 0.3, 0.3],
+            'addi': [0.3, 0.2, 0.5]
             }
 
         # Better to create a symbolic link in the designated folder than changing the variables
@@ -211,6 +211,8 @@ def import_data(list_names, name_dataset, dataset_info):
         # Tracking repartition of classes and sets
         classes_count += img_classes_count
         sets_count[img_dict['set']] += 1
+
+        # TODO do classes_count for different sets
 
         # Add data to the global list
         list_data.append(img_dict)
