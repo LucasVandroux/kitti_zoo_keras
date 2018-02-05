@@ -1,5 +1,7 @@
-# import sys
+import importlib                    # To import other modules
+import sys
 import time
+import os.path as path
 # import numpy as n
 from keras import backend as K
 # from keras.optimizers import Adam, SGD, RMSprop
@@ -9,49 +11,79 @@ from keras import backend as K
 # from keras_frcnn import losses as losses_fn
 # import keras_frcnn.roi_helpers as roi_helpers
 # from keras.utils import generic_utils
-# from keras_frcnn import resnet as nn
+
+# Import available base networks
+from models.faster_rcnn.base_network import resnet50 as resnet50
+from models.faster_rcnn.base_network import vgg16 as vgg16
 
 def train(cfg, dataset, train_imgs, test_imgs):
-    # TODO
-    # Need to import right package so check if package imported correspond to config file and raise error if not
-    # cfg.base_net_weights = os.path.join('./model/', nn.get_weight_path())
+    """
+    TODO
+    """
 
-    with open(cfg.config_save_file, 'wb') as config_f:
-        pickle.dump(cfg, config_f)
-        print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
-            cfg.config_save_file))
+    # =============================
+    # === DEFINE NEURAL NETWORK ===
+    # =============================
+    img_input = Input(shape=(None, None, 3))
+    roi_input = Input(shape=(None, 4))
 
+    # Load module corresponding to chosen base network
+    module_base_network = 'models.' + cfg['model_name'] + '.base_network.' + cfg['base_network']
+    try:
+        nn = importlib.import_module(module_base_network)
+    except Exception as e:
+        sys.exit('ERROR: Impossible to load the base_network module \'' + module_base_network + '\'')
+
+    # --- LAYERS ---
+    # Define shared layers
+    shared_layers = nn.nn_base(img_input, trainable=True)
+
+    # Define RPN
+    num_anchors = len(cfg['anchor_boxes']['scales']) * len(cfg['anchor_boxes']['ratios'])
+    rpn = nn.rpn(shared_layers, num_anchors)
+
+    # Define Classifier
+    classifier = nn.classifier(shared_layers, roi_input, cfg.num_rois, nb_classes=len(classes_count), trainable=True)
+
+    # --- MODELS ---
+    # Define Models
+    model_rpn = Model(img_input, rpn[:2])
+    model_classifier = Model([img_input, roi_input], classifier)
+
+    # This is a model that holds both the RPN and the classifier, used to load/save weights for the models
+    model_all = Model([img_input, roi_input], rpn[:2] + classifier)
+
+    # --- LOAD WEIGHTS ---
+    base_net_weights = path.join('model', cfg['model_name'], 'base_network', 'weights', nn.get_weight_path())
+    try:
+        print('Loading weights from \'' + base_net_weights + '\'...')
+        model_rpn.load_weights(cfg.model_path, by_name=True)
+        print(' ↳ SUCCESS: RPN\'s weighhts loaded.'')
+        model_classifier.load_weights(cfg.model_path, by_name=True)
+        print(' ↳ SUCCESS: Classifier\'s weighhts loaded.'')
+    except Exception as e:
+        print(e)
+        print('ERROR: Impossible to load pretrained model weights.')
+        print(' ↳ Pretrained weights can be downloaded from:  https://github.com/fchollet/keras/tree/master/keras/applications')
+
+    # TODO save config file
+    # with open(cfg.config_save_file, 'wb') as config_f:
+    #     pickle.dump(cfg, config_f)
+    #     print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
+    #         cfg.config_save_file))
+
+
+    # --- PREPARE DATA ---
     data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, cfg, nn.get_img_output_length,
                                                    K.image_dim_ordering(), mode='train')
     data_gen_test = data_generators.get_anchor_gt(test_imgs, classes_count, cfg, nn.get_img_output_length,
                                                  K.image_dim_ordering(), mode='val')
 
-    img_input = Input(shape=(None, None, 3))
-    roi_input = Input(shape=(None, 4))
 
-    # define the base network (resnet here, can be VGG, Inception, etc)
-    shared_layers = nn.nn_base(img_input, trainable=True)
 
-    # define the RPN, built on the base layers
-    num_anchors = len(cfg.anchor_box_scales) * len(cfg.anchor_box_ratios)
-    rpn = nn.rpn(shared_layers, num_anchors)
 
-    classifier = nn.classifier(shared_layers, roi_input, cfg.num_rois, nb_classes=len(classes_count), trainable=True)
 
-    model_rpn = Model(img_input, rpn[:2])
-    model_classifier = Model([img_input, roi_input], classifier)
 
-    # this is a model that holds both the RPN and the classifier, used to load/save weights for the models
-    model_all = Model([img_input, roi_input], rpn[:2] + classifier)
-
-    try:
-        print('loading weights from {}'.format(cfg.base_net_weights))
-        model_rpn.load_weights(cfg.model_path, by_name=True)
-        model_classifier.load_weights(cfg.model_path, by_name=True)
-    except Exception as e:
-        print(e)
-        print('Could not load pretrained model weights. Weights can be found in the keras application folder '
-              'https://github.com/fchollet/keras/tree/master/keras/applications')
 
     # --- Optimizer ---
     optimizer_rpn = Adam(lr=1e-5)
