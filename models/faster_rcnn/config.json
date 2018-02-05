@@ -28,15 +28,13 @@
     "optimizer_lr": 1e-5
   },
   "classifier": {
+    "min_overlap": 0.1,
+    "max_overlap": 0.5,
     "optimizer_lr": 1e-5
   },
   "std": {
     "scaling": 4.0,
     "classifier_regr": [8.0, 8.0, 4.0, 4.0]
-  },
-  "classifier_roi": {
-    "min_overlap": 0.1,
-    "max_overlap": 0.5
   },
   "balanced_classes": 0
 }
