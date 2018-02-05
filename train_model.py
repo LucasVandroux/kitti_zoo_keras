@@ -5,24 +5,10 @@ this code will train on kitti data set
 import argparse                      # Read console arguments
 import json                          # Use to import config file
 import os
-import os.path as path      # To create file path
+import os.path as path               # To create file path
 import sys
-# import random
-# import pprint
-# import sys
-# import time
-# import numpy as np
-# import pickle
-# from keras import backend as K
-# from keras.optimizers import Adam, SGD, RMSprop
-# from keras.layers import Input
-# from keras.models import Model
-# from keras_frcnn import config, data_generators
-# from keras_frcnn import losses as losses_fn
-# import keras_frcnn.roi_helpers as roi_helpers
-# from keras.utils import generic_utils
-# from keras_frcnn import resnet as nn
-# from keras_frcnn.simple_parser import get_data
+import random
+import models.faster_rcnn as faster_rcnn
 
 
 def train(args_):
@@ -75,7 +61,7 @@ def train(args_):
         print('SUCCESS: Created ' + trained_model_folder_path)
 
     # Create the folder to save the new model
-    export_folder_path = path.join(trained_model_folder_path, (cfg['model_name'] + '-' + cfg['network'] + '-' + cfg['folder_descriptor']))
+    export_folder_path = path.join(trained_model_folder_path, (cfg['model_name'] + '-' + cfg['base_network'] + '-' + cfg['folder_descriptor']))
     if path.isdir(export_folder_path):
         sys.exit('ERROR: \'' + export_folder_path + '\' already exists, please change \'folder_descriptor\' in config file.')
     else:
@@ -86,17 +72,48 @@ def train(args_):
     cfg['export_folder'] = path.abspath(export_folder_path)
 
     # TODO only print useful information at this moment
-    print(json.dumps(cfg, indent=2))
+    # print(json.dumps(cfg, indent=2))
 
     # ========================
     # === LOAD THE DATASET ===
     # ========================
     # Import dataset information
     dataset_json_path = path.abspath(args_.dataset)
-    dataset = json.load(open(dataset_json_path))
+
+    try:
+        print('Importing dataset information...')
+        dataset = json.load(open(dataset_json_path))
+        print('SUCCESS: Dataset imported.')
+    except ValueError:
+        sys.exit('ERROR: Decoding ' + dataset_json_path + ' has failed.')
+
     cfg['dataset_path'] = dataset_json_path
 
     all_images = dataset['data']
+    classes_count = dataset['info']['classes_count']
+    class_mapping = dataset['info']['class_mapping']
+    set_mapping = dataset['info']['set_mapping']
+
+    # Add class mapping to the configuration file
+    cfg['class_mapping'] = class_mapping
+
+    # Shuffling the data
+    # DEBUG: set the seed for reproductible resutls
+    random.seed(1)
+
+    random.shuffle(all_images)
+    num_imgs = len(all_images)
+    train_imgs = [s for s in all_images if s['set'] == set_mapping['train'] or s['set'] == set_mapping['dev']]
+    test_imgs = [s for s in all_images if s['set'] == set_mapping['test']]
+
+    print(' ↳ Classes count: ' + str(classes_count))
+    print(' ↳ Num train+dev: ' + str(len(train_imgs)))
+    print(' ↳ Num test: ' + str(len(test_imgs)))
+
+    # TODO save the config file in the export folder
+
+    # Train Faster R-CNN model
+    faster_rcnn.train(cfg, dataset, train_imgs, test_imgs)
 
     # all_images, classes_count, class_mapping = get_data(cfg.simple_label_file)
 
@@ -104,24 +121,25 @@ def train(args_):
     #     classes_count['bg'] = 0
     #     class_mapping['bg'] = len(class_mapping)
 
-    cfg.class_mapping = class_mapping
-    with open(cfg.config_save_file, 'wb') as config_f:
-        pickle.dump(cfg, config_f)
-        print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
-            cfg.config_save_file))
 
-    inv_map = {v: k for k, v in class_mapping.items()}
 
-    print('Training images per class:')
-    pprint.pprint(classes_count)
-    print('Num classes (including bg) = {}'.format(len(classes_count)))
-    random.shuffle(all_images)
-    num_imgs = len(all_images)
-    train_imgs = [s for s in all_images if s['imageset'] == 'trainval']
-    val_imgs = [s for s in all_images if s['imageset'] == 'test']
+    # with open(cfg.config_save_file, 'wb') as config_f:
+    #     pickle.dump(cfg, config_f)
+    #     print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
+    #         cfg.config_save_file))
 
-    print('Num train samples {}'.format(len(train_imgs)))
-    print('Num val samples {}'.format(len(val_imgs)))
+    # inv_map = {v: k for k, v in class_mapping.items()}
+
+    # print('Training images per class:')
+    # pprint.pprint(classes_count)
+    # print('Num classes (including bg) = {}'.format(len(classes_count)))
+    # random.shuffle(all_images)
+    # num_imgs = len(all_images)
+    # train_imgs = [s for s in all_images if s['imageset'] == 'trainval']
+    # val_imgs = [s for s in all_images if s['imageset'] == 'test']
+    #
+    # print('Num train samples {}'.format(len(train_imgs)))
+    # print('Num val samples {}'.format(len(val_imgs)))
 
     # # TODO
     # # Need to import right package so check if package imported correspond to config file and raise error if not
