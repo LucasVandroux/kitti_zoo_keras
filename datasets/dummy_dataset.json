@@ -12,20 +12,20 @@
       "DontCare": 8
     },
     "set_mapping": {
-      "0": "train",
-      "1": "dev",
-      "2": "test"
+      "train": 0,
+      "dev": 1,
+      "test": 2
     },
     "sets_distribution": {
       "main": [
-        0.8,
-        0.1,
-        0.1
+        0.4,
+        0.3,
+        0.3
       ],
       "addi": [
-        1,
-        0,
-        0
+        0.3,
+        0.2,
+        0.5
       ]
     },
     "image_extension": ".png",
@@ -46,8 +46,8 @@
         6
       ],
       "sets_count": [
-        5,
-        0,
+        4,
+        1,
         0
       ],
       "mean_channels": [
@@ -72,9 +72,9 @@
         6
       ],
       "sets_count": [
-        5,
-        0,
-        0
+        1,
+        1,
+        3
       ],
       "mean_channels": [
         173.6,
@@ -95,9 +95,9 @@
       12
     ],
     "sets_count": [
-      10,
-      0,
-      0
+      5,
+      2,
+      3
     ],
     "mean_channels": [
       173.6,
@@ -164,7 +164,7 @@
         0,
         1
       ],
-      "set": 0
+      "set": 1
     },
     {
       "dataset": "main",
@@ -401,7 +401,7 @@
         0,
         1
       ],
-      "set": 0
+      "set": 1
     },
     {
       "dataset": "addi",
@@ -447,7 +447,7 @@
         0,
         2
       ],
-      "set": 0
+      "set": 2
     },
     {
       "dataset": "addi",
@@ -493,7 +493,7 @@
         0,
         2
       ],
-      "set": 0
+      "set": 2
     },
     {
       "dataset": "addi",
@@ -578,7 +578,7 @@
         0,
         0
       ],
-      "set": 0
+      "set": 2
     }
   ]
 }
