@@ -9,7 +9,6 @@
   },
   "img": {
     "min_side": 600,
-    "channel_mean": [103.939, 116.779, 123.68],
     "scaling_factor": 1.0
   },
   "data_augmentation": {
@@ -25,7 +24,11 @@
     "num_rois": 32,
     "stride": 16,
     "min_overlap": 0.3,
-    "max_overlap": 0.7
+    "max_overlap": 0.7,
+    "optimizer_lr": 1e-5
+  },
+  "classifier": {
+    "optimizer_lr": 1e-5
   },
   "std": {
     "scaling": 4.0,
