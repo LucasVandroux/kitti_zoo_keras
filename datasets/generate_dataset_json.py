@@ -232,7 +232,7 @@ def generate_json(export_file_path):
 
     # Add global variable to dataset_info
     dataset_info['class_mapping'] = cfg.class_mapping
-    dataset_info['set_mapping'] = {0: 'train', 1: 'dev', 2: 'test'}
+    dataset_info['set_mapping'] = {'train': 0, 'dev': 1, 'test': 2}
     dataset_info['sets_distribution'] = cfg.sets_distribution
     dataset_info['image_extension'] = cfg.img_ext
     dataset_info['label_extension'] = cfg.lbl_ext
