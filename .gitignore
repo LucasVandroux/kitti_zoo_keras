@@ -3,3 +3,4 @@ main/
 additional/
 *.pyc
 .ipynb*
+*.h5
