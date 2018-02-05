@@ -97,9 +97,6 @@ def train(args_):
     cfg['img']['channel_mean'] = dataset['info']['mean_channels']
 
     # Shuffling the data
-    # DEBUG: set the seed for reproductible resutls
-    random.seed(1)
-
     random.shuffle(all_images)
     num_imgs = len(all_images)
     train_imgs = [s for s in all_images if s['set'] == set_mapping['train'] or s['set'] == set_mapping['dev']]
