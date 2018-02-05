@@ -64,12 +64,10 @@ def train(args_):
     export_folder_path = path.join(trained_model_folder_path, (cfg['model_name'] + '-' + cfg['base_network'] + '-' + cfg['folder_descriptor']))
     if path.isdir(export_folder_path):
         sys.exit('ERROR: \'' + export_folder_path + '\' already exists, please change \'folder_descriptor\' in config file.')
-    else:
-        os.makedirs(export_folder_path)
-        print('SUCCESS: Created ' + export_folder_path)
 
     # Add path to export the weights and config file of the model
     cfg['export_folder'] = path.abspath(export_folder_path)
+    cfg['model_path'] = path.join(cfg['export_folder'], (cfg['model_name'] + '-' + cfg['base_network'] + '.hdf5'))
 
     # TODO only print useful information at this moment
     # print(json.dumps(cfg, indent=2))
@@ -96,6 +94,7 @@ def train(args_):
 
     # Add class mapping to the configuration file
     cfg['class_mapping'] = class_mapping
+    cfg['img']['channel_mean'] = dataset['info']['mean_channels']
 
     # Shuffling the data
     # DEBUG: set the seed for reproductible resutls

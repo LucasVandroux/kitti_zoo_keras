@@ -1,29 +1,35 @@
 import importlib                    # To import other modules
 import sys
+import os
 import time
 import os.path as path
+import json
 from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
-from models.faster_rcnn import config, data_generators
-# import numpy as n
-# from keras.optimizers import Adam, SGD, RMSprop
-# from keras_frcnn import losses as losses_fn
+from models.faster_rcnn import data_generators
+from keras.optimizers import Adam as optimizer  # TODO try other optimizers
+from models.faster_rcnn import losses as losses_fn
+import numpy as np
+from keras.utils import generic_utils
 # import keras_frcnn.roi_helpers as roi_helpers
-# from keras.utils import generic_utils
-
-# Import available base networks
-from models.faster_rcnn.base_network import resnet50 as resnet50
-from models.faster_rcnn.base_network import vgg16 as vgg16
 
 def train(cfg, dataset, train_imgs, test_imgs):
     """
     TODO
     """
 
+    # TODO save config file
+    # with open(cfg.config_save_file, 'wb') as config_f:
+    #     pickle.dump(cfg, config_f)
+    #     print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
+    #         cfg.config_save_file))
+
+    print('----- MODEL CREATION -----')
     # =============================
     # === DEFINE NEURAL NETWORK ===
     # =============================
+    classes_count = dataset['info']['classes_count']
     img_input = Input(shape=(None, None, 3))
     roi_input = Input(shape=(None, 4))
 
@@ -43,7 +49,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
     rpn = nn.rpn(shared_layers, num_anchors)
 
     # Define Classifier
-    classifier = nn.classifier(shared_layers, roi_input, cfg['rpn']['num_rois'], nb_classes=len(dataset['info']['classes_count']), trainable=True)
+    classifier = nn.classifier(shared_layers, roi_input, cfg['rpn']['num_rois'], nb_classes=len(classes_count), trainable=True)
 
     # --- MODELS ---
     # Define Models
@@ -66,29 +72,24 @@ def train(cfg, dataset, train_imgs, test_imgs):
         print('ERROR: Impossible to load pretrained model weights.')
         print(' ↳ Pretrained weights can be downloaded from:  https://github.com/fchollet/keras/tree/master/keras/applications')
 
-    # TODO save config file
-    # with open(cfg.config_save_file, 'wb') as config_f:
-    #     pickle.dump(cfg, config_f)
-    #     print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
-    #         cfg.config_save_file))
+    # ====================
+    # === PREPARE DATA ===
+    # ====================
+    length_img_output = nn.get_img_output_length
 
+    data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, cfg, length_img_output, K.image_dim_ordering(), mode='train')
 
-    # --- PREPARE DATA ---
-    data_gen_train = data_generators.get_anchor_gt(train_imgs, classes_count, cfg, nn.get_img_output_length,
-                                                   K.image_dim_ordering(), mode='train')
-    data_gen_test = data_generators.get_anchor_gt(test_imgs, classes_count, cfg, nn.get_img_output_length,
-                                                 K.image_dim_ordering(), mode='val')
+    data_gen_test = data_generators.get_anchor_gt(test_imgs, classes_count, cfg, length_img_output, K.image_dim_ordering(), mode='val')
 
-
-
-
-
-
+    # ======================
+    # === INITIALIZATION ===
+    # ======================
 
     # --- Optimizer ---
-    optimizer_rpn = Adam(lr=1e-5)
-    optimizer_classifier = Adam(lr=1e-5)
+    optimizer_rpn = optimizer(lr=cfg['rpn']['optimizer_lr'])
+    optimizer_classifier = optimizer(lr=cfg['classifier']['optimizer_lr'])
 
+    # --- Compile ---
     model_rpn.compile(optimizer=optimizer_rpn,
                       loss=[losses_fn.rpn_loss_cls(num_anchors), losses_fn.rpn_loss_regr(num_anchors)])
 
@@ -97,10 +98,11 @@ def train(cfg, dataset, train_imgs, test_imgs):
                              metrics={'dense_class_{}'.format(len(classes_count)): 'accuracy'})
     model_all.compile(optimizer='sgd', loss='mae')
 
-    epoch_length = int(cfg['epoch_length'])
-    num_epochs = int(cfg['num_epochs'])
-    iter_num = 0
+    # --- Epochs Parameters ---
+    epoch_length = int(cfg['train']['epoch_length'])
+    num_epochs = int(cfg['train']['num_epochs'])
 
+    iter_num = 0
     losses = np.zeros((epoch_length, 5))
     rpn_accuracy_rpn_monitor = []
     rpn_accuracy_for_epoch = []
@@ -108,10 +110,26 @@ def train(cfg, dataset, train_imgs, test_imgs):
 
     best_loss = np.Inf
 
-    class_mapping_inv = {v: k for k, v in class_mapping.items()}
-    print('Starting training')
+    # --- Save Config ---
+    print('Saving configuration file...')
 
-    vis = True
+    # Create folder to save the config file
+    os.makedirs(cfg['export_folder'])
+    print('SUCCESS: Created ' + cfg['export_folder'])
+
+    # Save config file
+    path_config_file = path.join(cfg['export_folder'], 'config.json')
+    with open(path_config_file, 'w') as outfile:
+        json.dump(cfg, outfile, indent=2)
+
+    print('SUCCESS: Configuration file saved to ' + path_config_file)
+
+    # class_mapping_inv = {v: k for k, v in class_mapping.items()}
+
+    print('--------------------------')
+    print('-------- TRAINING --------')
+
+    # vis = True
 
     for epoch_num in range(num_epochs):
 
@@ -238,6 +256,6 @@ def train(cfg, dataset, train_imgs, test_imgs):
             except Exception as e:
                 print('Exception: {}'.format(e))
                 # save model
-                model_all.save_weights(cfg.model_path)
+                model_all.save_weights(cfg['model_path'])
                 continue
     print('Training complete, exiting.')
