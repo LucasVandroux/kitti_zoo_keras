@@ -1,88 +1,5 @@
 {
   "info": {
-    "class_mapping": {
-      "Car": 0,
-      "Van": 1,
-      "Truck": 2,
-      "Pedestrian": 3,
-      "Person_sitting": 4,
-      "Cyclist": 5,
-      "Tram": 6,
-      "Misc": 7,
-      "DontCare": 8
-    },
-    "set_mapping": {
-      "train": 0,
-      "dev": 1,
-      "test": 2
-    },
-    "sets_distribution": {
-      "main": [
-        0.4,
-        0.3,
-        0.3
-      ],
-      "addi": [
-        0.3,
-        0.2,
-        0.5
-      ]
-    },
-    "image_extension": ".png",
-    "label_extension": ".txt",
-    "main": {
-      "num_data": 5,
-      "path_images": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images",
-      "path_labels": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/labels",
-      "classes_count": [
-        6,
-        0,
-        1,
-        2,
-        0,
-        1,
-        0,
-        0,
-        6
-      ],
-      "sets_count": [
-        4,
-        1,
-        0
-      ],
-      "mean_channels": [
-        173.6,
-        172.2,
-        162.8
-      ]
-    },
-    "addi": {
-      "num_data": 5,
-      "path_images": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images",
-      "path_labels": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/labels",
-      "classes_count": [
-        6,
-        0,
-        1,
-        2,
-        0,
-        1,
-        0,
-        0,
-        6
-      ],
-      "sets_count": [
-        1,
-        1,
-        3
-      ],
-      "mean_channels": [
-        173.6,
-        172.2,
-        162.8
-      ]
-    },
-    "num_data": 10,
     "classes_count": [
       12,
       0,
@@ -95,27 +12,101 @@
       12
     ],
     "sets_count": [
-      5,
-      2,
-      3
+      3,
+      3,
+      4
     ],
+    "sets_distribution": {
+      "main": [
+        0.4,
+        0.3,
+        0.3
+      ],
+      "addi": [
+        0.3,
+        0.2,
+        0.5
+      ]
+    },
+    "num_data": 10,
+    "image_extension": ".png",
+    "main": {
+      "sets_count": [
+        1,
+        2,
+        2
+      ],
+      "num_data": 5,
+      "mean_channels": [
+        173.6,
+        172.2,
+        162.8
+      ],
+      "classes_count": [
+        6,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "path_labels": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/labels",
+      "path_images": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images"
+    },
     "mean_channels": [
       173.6,
       172.2,
       162.8
-    ]
+    ],
+    "set_mapping": {
+      "dev": 1,
+      "train": 0,
+      "test": 2
+    },
+    "class_mapping": {
+      "Person_sitting": 4,
+      "Cyclist": 5,
+      "Pedestrian": 3,
+      "Van": 1,
+      "Truck": 2,
+      "Misc": 7,
+      "DontCare": 8,
+      "Car": 0,
+      "Tram": 6
+    },
+    "label_extension": ".txt",
+    "addi": {
+      "sets_count": [
+        2,
+        1,
+        2
+      ],
+      "num_data": 5,
+      "mean_channels": [
+        173.6,
+        172.2,
+        162.8
+      ],
+      "classes_count": [
+        6,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0,
+        0,
+        6
+      ],
+      "path_labels": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/labels",
+      "path_images": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images"
+    }
   },
   "data": [
     {
-      "dataset": "main",
-      "filename": "00008.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        150.96973554460635,
-        149.9124842187747,
-        146.64314781889345
-      ],
       "bboxes": [
         {
           "class": 0,
@@ -153,6 +144,14 @@
           "y2": 232
         }
       ],
+      "height": 375,
+      "dataset": "main",
+      "width": 1242,
+      "mean_channels": [
+        150.96973554460635,
+        149.9124842187747,
+        146.64314781889345
+      ],
       "classes_count": [
         2,
         0,
@@ -164,18 +163,10 @@
         0,
         1
       ],
-      "set": 1
+      "set": 0,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images/00008.png"
     },
     {
-      "dataset": "main",
-      "filename": "00025.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        178.5089495259037,
-        172.49016388354286,
-        150.89544044929687
-      ],
       "bboxes": [
         {
           "class": 0,
@@ -199,6 +190,14 @@
           "y2": 230
         }
       ],
+      "height": 375,
+      "dataset": "main",
+      "width": 1242,
+      "mean_channels": [
+        178.5089495259037,
+        172.49016388354286,
+        150.89544044929687
+      ],
       "classes_count": [
         1,
         0,
@@ -210,18 +209,10 @@
         0,
         2
       ],
-      "set": 0
+      "set": 2,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images/00025.png"
     },
     {
-      "dataset": "main",
-      "filename": "00028.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        182.35745209062645,
-        179.00553345143098,
-        164.97018027379036
-      ],
       "bboxes": [
         {
           "class": 5,
@@ -245,6 +236,14 @@
           "y2": 210
         }
       ],
+      "height": 375,
+      "dataset": "main",
+      "width": 1242,
+      "mean_channels": [
+        182.35745209062645,
+        179.00553345143098,
+        164.97018027379036
+      ],
       "classes_count": [
         0,
         0,
@@ -256,18 +255,10 @@
         0,
         2
       ],
-      "set": 0
+      "set": 1,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images/00028.png"
     },
     {
-      "dataset": "main",
-      "filename": "00037.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        186.74673225246553,
-        191.41930748281814,
-        194.28547130942562
-      ],
       "bboxes": [
         {
           "class": 2,
@@ -284,6 +275,14 @@
           "y2": 201
         }
       ],
+      "height": 375,
+      "dataset": "main",
+      "width": 1242,
+      "mean_channels": [
+        186.74673225246553,
+        191.41930748281814,
+        194.28547130942562
+      ],
       "classes_count": [
         0,
         0,
@@ -295,18 +294,10 @@
         0,
         1
       ],
-      "set": 0
+      "set": 1,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images/00037.png"
     },
     {
-      "dataset": "main",
-      "filename": "00089.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        172.77341552860034,
-        170.29599671119044,
-        160.75375503265892
-      ],
       "bboxes": [
         {
           "class": 0,
@@ -330,6 +321,14 @@
           "y2": 241
         }
       ],
+      "height": 375,
+      "dataset": "main",
+      "width": 1242,
+      "mean_channels": [
+        172.77341552860034,
+        170.29599671119044,
+        160.75375503265892
+      ],
       "classes_count": [
         3,
         0,
@@ -341,18 +340,10 @@
         0,
         0
       ],
-      "set": 0
+      "set": 2,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/main/images/00089.png"
     },
     {
-      "dataset": "addi",
-      "filename": "00008.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        150.96973554460635,
-        149.9124842187747,
-        146.64314781889345
-      ],
       "bboxes": [
         {
           "class": 0,
@@ -390,6 +381,14 @@
           "y2": 232
         }
       ],
+      "height": 375,
+      "dataset": "addi",
+      "width": 1242,
+      "mean_channels": [
+        150.96973554460635,
+        149.9124842187747,
+        146.64314781889345
+      ],
       "classes_count": [
         2,
         0,
@@ -401,18 +400,10 @@
         0,
         1
       ],
-      "set": 1
+      "set": 2,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images/00008.png"
     },
     {
-      "dataset": "addi",
-      "filename": "00025.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        178.5089495259037,
-        172.49016388354286,
-        150.89544044929687
-      ],
       "bboxes": [
         {
           "class": 0,
@@ -436,6 +427,14 @@
           "y2": 230
         }
       ],
+      "height": 375,
+      "dataset": "addi",
+      "width": 1242,
+      "mean_channels": [
+        178.5089495259037,
+        172.49016388354286,
+        150.89544044929687
+      ],
       "classes_count": [
         1,
         0,
@@ -447,18 +446,10 @@
         0,
         2
       ],
-      "set": 2
+      "set": 0,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images/00025.png"
     },
     {
-      "dataset": "addi",
-      "filename": "00028.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        182.35745209062645,
-        179.00553345143098,
-        164.97018027379036
-      ],
       "bboxes": [
         {
           "class": 5,
@@ -482,6 +473,14 @@
           "y2": 210
         }
       ],
+      "height": 375,
+      "dataset": "addi",
+      "width": 1242,
+      "mean_channels": [
+        182.35745209062645,
+        179.00553345143098,
+        164.97018027379036
+      ],
       "classes_count": [
         0,
         0,
@@ -493,18 +492,10 @@
         0,
         2
       ],
-      "set": 2
+      "set": 0,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images/00028.png"
     },
     {
-      "dataset": "addi",
-      "filename": "00037.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        186.74673225246553,
-        191.41930748281814,
-        194.28547130942562
-      ],
       "bboxes": [
         {
           "class": 2,
@@ -521,6 +512,14 @@
           "y2": 201
         }
       ],
+      "height": 375,
+      "dataset": "addi",
+      "width": 1242,
+      "mean_channels": [
+        186.74673225246553,
+        191.41930748281814,
+        194.28547130942562
+      ],
       "classes_count": [
         0,
         0,
@@ -532,18 +531,10 @@
         0,
         1
       ],
-      "set": 0
+      "set": 2,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images/00037.png"
     },
     {
-      "dataset": "addi",
-      "filename": "00089.png",
-      "height": 375,
-      "width": 1242,
-      "mean_channels": [
-        172.77341552860034,
-        170.29599671119044,
-        160.75375503265892
-      ],
       "bboxes": [
         {
           "class": 0,
@@ -567,6 +558,14 @@
           "y2": 241
         }
       ],
+      "height": 375,
+      "dataset": "addi",
+      "width": 1242,
+      "mean_channels": [
+        172.77341552860034,
+        170.29599671119044,
+        160.75375503265892
+      ],
       "classes_count": [
         3,
         0,
@@ -578,7 +577,8 @@
         0,
         0
       ],
-      "set": 2
+      "set": 1,
+      "filepath": "/Users/lucas/Documents/GitHub/kitti_zoo_keras/datasets/additional/images/00089.png"
     }
   ]
 }

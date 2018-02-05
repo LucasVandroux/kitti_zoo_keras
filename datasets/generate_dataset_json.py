@@ -187,7 +187,7 @@ def import_data(list_names, name_dataset, dataset_info):
     for idx in trange(len(list_names)):
         img_dict = {'dataset': name_dataset}
 
-        img_dict['filename'] = list_names[idx] + img_ext
+        img_dict['filepath'] = path.join(path_images, (list_names[idx] + img_ext))
 
         # Get images information
         im_shape, im_mean_channels = get_im_info(path.join(path_images, (list_names[idx] + img_ext)))
