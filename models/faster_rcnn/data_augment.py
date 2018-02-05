@@ -3,7 +3,7 @@ import numpy as np
 import copy
 
 
-def augment(img_data, config, augment=True):
+def augment(img_data, cfg, augment=True):
 	assert 'filepath' in img_data
 	assert 'bboxes' in img_data
 	assert 'width' in img_data
@@ -16,7 +16,7 @@ def augment(img_data, config, augment=True):
 	if augment:
 		rows, cols = img.shape[:2]
 
-		if config.use_horizontal_flips and np.random.randint(0, 2) == 0:
+		if cfg['data_augmentation']['use_horizontal_flips'] and np.random.randint(0, 2) == 0:
 			img = cv2.flip(img, 1)
 			for bbox in img_data_aug['bboxes']:
 				x1 = bbox['x1']
@@ -24,7 +24,7 @@ def augment(img_data, config, augment=True):
 				bbox['x2'] = cols - x1
 				bbox['x1'] = cols - x2
 
-		if config.use_vertical_flips and np.random.randint(0, 2) == 0:
+		if cfg['data_augmentation']['use_vertical_flips'] and np.random.randint(0, 2) == 0:
 			img = cv2.flip(img, 0)
 			for bbox in img_data_aug['bboxes']:
 				y1 = bbox['y1']
@@ -32,7 +32,7 @@ def augment(img_data, config, augment=True):
 				bbox['y2'] = rows - y1
 				bbox['y1'] = rows - y2
 
-		if config.rot_90:
+		if cfg['data_augmentation']['rot_90']:
 			angle = np.random.choice([0,90,180,270],1)[0]
 			if angle == 270:
 				img = np.transpose(img, (1,0,2))
@@ -64,7 +64,7 @@ def augment(img_data, config, augment=True):
 					bbox['x1'] = rows - y2
 					bbox['x2'] = rows - y1
 					bbox['y1'] = x1
-					bbox['y2'] = x2        
+					bbox['y2'] = x2
 				elif angle == 0:
 					pass
 
