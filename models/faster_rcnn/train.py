@@ -12,7 +12,7 @@ from keras.optimizers import Adam as optimizer  # TODO try other optimizers
 from models.faster_rcnn import losses as losses_fn
 import numpy as np
 from keras.utils import generic_utils
-# import keras_frcnn.roi_helpers as roi_helpers
+import models.faster_rcnn.roi_helpers as roi_helpers
 
 def train(cfg, dataset, train_imgs, test_imgs):
     """
@@ -29,7 +29,11 @@ def train(cfg, dataset, train_imgs, test_imgs):
     # =============================
     # === DEFINE NEURAL NETWORK ===
     # =============================
-    classes_count = dataset['info']['classes_count']
+    # Building the classes_count as the last implementation
+    classes_count = {}
+    for key in dataset['info']['class_mapping']:
+        classes_count[key] = dataset['info']['classes_count'][dataset['info']['class_mapping'][key]]
+
     img_input = Input(shape=(None, None, 3))
     roi_input = Input(shape=(None, 4))
 
@@ -150,16 +154,21 @@ def train(cfg, dataset, train_imgs, test_imgs):
                               ' the ground truth boxes. Check RPN settings or keep training.')
 
                 X, Y, img_data = next(data_gen_train)
+                print('DEBUG: loss_rpn = model_rpn.train_on_batch(X, Y)...')
 
                 loss_rpn = model_rpn.train_on_batch(X, Y)
 
+                print('DEBUG: P_rpn = model_rpn.predict_on_batch(X)...')
                 P_rpn = model_rpn.predict_on_batch(X)
 
+                print('DEBUG: result = roi_helpers.rpn_to_roi...')
                 result = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], cfg, K.image_dim_ordering(), use_regr=True,
                                                 overlap_thresh=0.7,
                                                 max_boxes=300)
                 # note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
-                X2, Y1, Y2, IouS = roi_helpers.calc_iou(result, img_data, cfg, class_mapping)
+
+                print('DEBUG: X2, Y1, Y2, IouS = roi_helpers.calc_iou...')
+                X2, Y1, Y2, IouS = roi_helpers.calc_iou(result, img_data, cfg, dataset['info']['class_mapping'])
 
                 if X2 is None:
                     rpn_accuracy_rpn_monitor.append(0)
@@ -204,6 +213,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
                     else:
                         sel_samples = random.choice(pos_samples)
 
+                print('DEBUG: loss_class = model_classifier.train_on_batch...')
                 loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]],
                                                              [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
 
@@ -254,8 +264,9 @@ def train(cfg, dataset, train_imgs, test_imgs):
                     break
 
             except Exception as e:
-                print('Exception: {}'.format(e))
-                # save model
+                print(e)
+                print('Saving Model...')
                 model_all.save_weights(cfg['model_path'])
+                print('SUCCESS: Model saved in \'' + cfg['model_path'] + '\'.')
                 continue
     print('Training complete, exiting.')
