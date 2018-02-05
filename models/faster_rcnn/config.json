@@ -17,9 +17,9 @@
     "use_vertical_flips": 1,
     "rot_90": 1
   },
-  "anchors": {
-    "box_scales": [128, 256, 512],
-    "box_ratios": [[1, 1], [1, 2], [2, 1]]
+  "anchor_boxes": {
+    "scales": [128, 256, 512],
+    "ratios": [[1, 1], [1, 2], [2, 1]]
   },
   "rpn": {
     "num_rois": 32,
