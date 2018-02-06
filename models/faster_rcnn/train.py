@@ -41,8 +41,10 @@ def train(cfg, dataset, train_imgs, test_imgs):
     module_base_network = 'models.' + cfg['model_name'] + '.base_network.' + cfg['base_network']
     try:
         nn = importlib.import_module(module_base_network)
+        print('SUCCESS: \'' + module_base_network + '\' has been imported.')
     except Exception as e:
-        sys.exit('ERROR: Impossible to load the base_network module \'' + module_base_network + '\'')
+        print(e)
+        sys.exit('ERROR: Impossible to import the module \'' + module_base_network + '\'.')
 
     # --- LAYERS ---
     # Define shared layers
