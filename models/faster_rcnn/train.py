@@ -70,9 +70,9 @@ def train(cfg, dataset, train_imgs, test_imgs):
     try:
         print('Loading weights from \'' + base_net_weights + '\'...')
         model_rpn.load_weights(base_net_weights, by_name=True)
-        print(' ↳ SUCCESS: RPN\'s weighhts loaded.')
+        print(' ↳ SUCCESS: RPN\'s weights loaded.')
         model_classifier.load_weights(base_net_weights, by_name=True)
-        print(' ↳ SUCCESS: Classifier\'s weighhts loaded.')
+        print(' ↳ SUCCESS: Classifier\'s weights loaded.')
     except Exception as e:
         print(e)
         print('ERROR: Impossible to load pretrained model weights.')
@@ -132,7 +132,6 @@ def train(cfg, dataset, train_imgs, test_imgs):
 
     # class_mapping_inv = {v: k for k, v in class_mapping.items()}
 
-    print('--------------------------')
     print('-------- TRAINING --------')
 
     # vis = True
@@ -162,11 +161,11 @@ def train(cfg, dataset, train_imgs, test_imgs):
                 P_rpn = model_rpn.predict_on_batch(X)
 
                 result = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], cfg, K.image_dim_ordering(), use_regr=True,
-                                                overlap_thresh=0.7,
-                                                max_boxes=300)
+                                                overlap_thresh=cfg['rpn']['overlap_thresh'],
+                                                max_boxes=cfg['rpn']['max_boxes'])
                 # note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
 
-                X2, Y1, Y2, IouS = roi_helpers.calc_iou(result, img_data, cfg, dataset['info']['class_mapping'])
+                X2, Y1, Y2, IouS = roi_helpers.calc_iou(result, img_data, cfg)
 
                 if X2 is None:
                     rpn_accuracy_rpn_monitor.append(0)
@@ -262,9 +261,9 @@ def train(cfg, dataset, train_imgs, test_imgs):
 
             except Exception as e:
                 print(e)
+                sys.exit('DEBUG: Exit when error to speed up debug.')
                 print('Saving Model...')
                 model_all.save_weights(cfg['model_path'])
                 print('SUCCESS: Model saved in \'' + cfg['model_path'] + '\'.')
-                print('--------------------------')
                 continue
-    print('Training complete, exiting.')
+    print('SUCESS: Training complete, exiting.')

@@ -41,7 +41,8 @@ def train(args_):
     # Import config file from the model subfolder
     try:
         cfg = json.load(open(config_path))
-    except ValueError:
+    except ValueError as ve:
+        print(ve)
         sys.exit('ERROR: Decoding ' + config_path + ' has failed.')
 
     # Check if folder to save model exists or create it
@@ -103,7 +104,7 @@ def train(args_):
     print(' ↳ Num test: ' + str(len(test_imgs)))
 
     # TODO add the possibilty to train different models
-    
+
     # Train Faster R-CNN model
     faster_rcnn.train(cfg, dataset, train_imgs, test_imgs)
 
