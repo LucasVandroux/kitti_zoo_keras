@@ -60,7 +60,7 @@ def train(args_):
         os.makedirs(trained_model_folder_path)
         print('SUCCESS: Created ' + trained_model_folder_path)
 
-    # Create the folder to save the new model
+    # Test if the folder to save the new model exists already
     export_folder_path = path.join(trained_model_folder_path, (cfg['model_name'] + '-' + cfg['base_network'] + '-' + cfg['folder_descriptor']))
     if path.isdir(export_folder_path):
         sys.exit('ERROR: \'' + export_folder_path + '\' already exists, please change \'folder_descriptor\' in config file.')
@@ -92,8 +92,14 @@ def train(args_):
     class_mapping = dataset['info']['class_mapping']
     set_mapping = dataset['info']['set_mapping']
 
+    # Add Background class
+    if 'bg' not in class_mapping or 'Background' not in class_mapping:
+        class_mapping['Background'] = len(class_mapping)
+        classes_count.append(0)
+
     # Add class mapping to the configuration file
     cfg['class_mapping'] = class_mapping
+    cfg['classes_count'] = classes_count
     cfg['img']['channel_mean'] = dataset['info']['mean_channels']
 
     # Shuffling the data

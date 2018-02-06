@@ -160,7 +160,7 @@ def calc_rpn(cfg, img_data, width, height, resized_width, resized_height, img_le
 							tw = np.log((gta[bbox_num, 1] - gta[bbox_num, 0]) / (x2_anc - x1_anc))
 							th = np.log((gta[bbox_num, 3] - gta[bbox_num, 2]) / (y2_anc - y1_anc))
 
-						if img_data['bboxes'][bbox_num]['class'] != 'bg':
+						if img_data['bboxes'][bbox_num]['class'] != 'Background':
 
 							# all GT boxes should be mapped to an anchor box, so we keep track of which anchor box was best
 							if curr_iou > best_iou_for_bbox[bbox_num]:

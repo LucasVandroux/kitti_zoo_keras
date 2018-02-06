@@ -1,3 +1,4 @@
+from __future__ import division      # https://mail.python.org/pipermail/tutor/2008-March/060886.html
 import importlib                    # To import other modules
 import sys
 import os
@@ -143,7 +144,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
         while True:
             try:
 
-                if len(rpn_accuracy_rpn_monitor) == epoch_length and cfg.verbose:
+                if len(rpn_accuracy_rpn_monitor) == epoch_length and cfg['verbose']:
                     mean_overlapping_bboxes = float(sum(rpn_accuracy_rpn_monitor)) / len(rpn_accuracy_rpn_monitor)
                     rpn_accuracy_rpn_monitor = []
                     print(
@@ -191,16 +192,16 @@ def train(cfg, dataset, train_imgs, test_imgs):
                 rpn_accuracy_rpn_monitor.append(len(pos_samples))
                 rpn_accuracy_for_epoch.append((len(pos_samples)))
 
-                if cfg.num_rois > 1:
-                    if len(pos_samples) < cfg.num_rois // 2:
+                if cfg['rpn']['num_rois'] > 1:
+                    if len(pos_samples) < cfg['rpn']['num_rois'] // 2:
                         selected_pos_samples = pos_samples.tolist()
                     else:
-                        selected_pos_samples = np.random.choice(pos_samples, cfg.num_rois // 2, replace=False).tolist()
+                        selected_pos_samples = np.random.choice(pos_samples, cfg['rpn']['num_rois'] // 2, replace=False).tolist()
                     try:
-                        selected_neg_samples = np.random.choice(neg_samples, cfg.num_rois - len(selected_pos_samples),
+                        selected_neg_samples = np.random.choice(neg_samples, cfg['rpn']['num_rois'] - len(selected_pos_samples),
                                                                 replace=False).tolist()
                     except:
-                        selected_neg_samples = np.random.choice(neg_samples, cfg.num_rois - len(selected_pos_samples),
+                        selected_neg_samples = np.random.choice(neg_samples, cfg['rpn']['num_rois'] - len(selected_pos_samples),
                                                                 replace=True).tolist()
 
                     sel_samples = selected_pos_samples + selected_neg_samples
@@ -241,7 +242,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
                     mean_overlapping_bboxes = float(sum(rpn_accuracy_for_epoch)) / len(rpn_accuracy_for_epoch)
                     rpn_accuracy_for_epoch = []
 
-                    if cfg.verbose:
+                    if cfg['verbose']:
                         print('Mean number of bounding boxes from RPN overlapping ground truth boxes: {}'.format(
                             mean_overlapping_bboxes))
                         print('Classifier accuracy for bounding boxes from RPN: {}'.format(class_acc))
@@ -256,10 +257,10 @@ def train(cfg, dataset, train_imgs, test_imgs):
                     start_time = time.time()
 
                     if curr_loss < best_loss:
-                        if cfg.verbose:
+                        if cfg['verbose']:
                             print('Total loss decreased from {} to {}, saving weights'.format(best_loss, curr_loss))
                         best_loss = curr_loss
-                        model_all.save_weights(cfg.model_path)
+                        model_all.save_weights(cfg['model_path'])
 
                     break
 

@@ -147,8 +147,8 @@ def predict(args_):
     cfg.rot_90 = False
 
     class_mapping = cfg.class_mapping
-    if 'bg' not in class_mapping:
-        class_mapping['bg'] = len(class_mapping)
+    if 'Background' not in class_mapping:
+        class_mapping['Background'] = len(class_mapping)
 
     class_mapping = {v: k for k, v in class_mapping.items()}
     input_shape_img = (None, None, 3)

@@ -52,7 +52,7 @@ def calc_iou(R, img_data, cfg, class_mapping):
 
             if cfg['classifier']['min_overlap'] <= best_iou < cfg['classifier']['max_overlap']:
                 # hard negative example
-                cls_name = 'bg'
+                cls_name = 'Background'
             elif cfg['classifier']['max_overlap'] <= best_iou:
                 cls_name = bboxes[best_bbox]['class']
                 cxg = (gta[best_bbox, 0] + gta[best_bbox, 1]) / 2.0
@@ -75,7 +75,7 @@ def calc_iou(R, img_data, cfg, class_mapping):
         y_class_num.append(copy.deepcopy(class_label))
         coords = [0] * 4 * (len(class_mapping) - 1)
         labels = [0] * 4 * (len(class_mapping) - 1)
-        if cls_name != 'bg':
+        if cls_name != 'Background':
             label_pos = 4 * class_num
             sx, sy, sw, sh = C.classifier_regr_std
             coords[label_pos:4 + label_pos] = [sx * tx, sy * ty, sw * tw, sh * th]
