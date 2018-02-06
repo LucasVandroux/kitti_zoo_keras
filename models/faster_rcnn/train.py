@@ -17,15 +17,14 @@ import models.faster_rcnn.roi_helpers as roi_helpers
 
 def train(cfg, dataset, train_imgs, test_imgs):
     """
-    TODO
+    Train the Faster R-CNN model
+
+    Parameters:
+    cfg         -- Configuration Dictionary
+    dataset     -- Dataset info Dictionary
+    train_imgs  -- List of the images to use for training
+    test_imgs   -- List of the images to use for testing
     """
-
-    # TODO save config file
-    # with open(cfg.config_save_file, 'wb') as config_f:
-    #     pickle.dump(cfg, config_f)
-    #     print('Config has been written to {}, and can be loaded when testing to ensure correct results'.format(
-    #         cfg.config_save_file))
-
     print('----- MODEL CREATION -----')
     # =============================
     # === DEFINE NEURAL NETWORK ===
@@ -155,20 +154,16 @@ def train(cfg, dataset, train_imgs, test_imgs):
                               ' the ground truth boxes. Check RPN settings or keep training.')
 
                 X, Y, img_data = next(data_gen_train)
-                print('DEBUG: loss_rpn = model_rpn.train_on_batch(X, Y)...')
 
                 loss_rpn = model_rpn.train_on_batch(X, Y)
 
-                print('DEBUG: P_rpn = model_rpn.predict_on_batch(X)...')
                 P_rpn = model_rpn.predict_on_batch(X)
 
-                print('DEBUG: result = roi_helpers.rpn_to_roi...')
                 result = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], cfg, K.image_dim_ordering(), use_regr=True,
                                                 overlap_thresh=0.7,
                                                 max_boxes=300)
                 # note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
 
-                print('DEBUG: X2, Y1, Y2, IouS = roi_helpers.calc_iou...')
                 X2, Y1, Y2, IouS = roi_helpers.calc_iou(result, img_data, cfg, dataset['info']['class_mapping'])
 
                 if X2 is None:
@@ -214,7 +209,6 @@ def train(cfg, dataset, train_imgs, test_imgs):
                     else:
                         sel_samples = random.choice(pos_samples)
 
-                print('DEBUG: loss_class = model_classifier.train_on_batch...')
                 loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]],
                                                              [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
 
@@ -269,5 +263,6 @@ def train(cfg, dataset, train_imgs, test_imgs):
                 print('Saving Model...')
                 model_all.save_weights(cfg['model_path'])
                 print('SUCCESS: Model saved in \'' + cfg['model_path'] + '\'.')
+                print('--------------------------')
                 continue
     print('Training complete, exiting.')
