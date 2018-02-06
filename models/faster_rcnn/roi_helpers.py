@@ -5,7 +5,11 @@ from . import data_generators
 import copy
 
 
-def calc_iou(R, img_data, cfg, class_mapping):
+def calc_iou(R, img_data, cfg):
+    class_mapping = cfg['class_mapping']
+    # Inverse the class mapping
+    inv_class_mapping = {v: k for k, v in class_mapping.items()}
+
     bboxes = img_data['bboxes']
     (width, height) = (img_data['width'], img_data['height'])
     # get image dimensions for resizing
@@ -54,7 +58,7 @@ def calc_iou(R, img_data, cfg, class_mapping):
                 # hard negative example
                 cls_name = 'Background'
             elif cfg['classifier']['max_overlap'] <= best_iou:
-                cls_name = bboxes[best_bbox]['class']
+                cls_name = inv_class_mapping[bboxes[best_bbox]['class']]
                 cxg = (gta[best_bbox, 0] + gta[best_bbox, 1]) / 2.0
                 cyg = (gta[best_bbox, 2] + gta[best_bbox, 3]) / 2.0
 
@@ -77,7 +81,7 @@ def calc_iou(R, img_data, cfg, class_mapping):
         labels = [0] * 4 * (len(class_mapping) - 1)
         if cls_name != 'Background':
             label_pos = 4 * class_num
-            sx, sy, sw, sh = C.classifier_regr_std
+            sx, sy, sw, sh = cfg['classifier']['regr_std']
             coords[label_pos:4 + label_pos] = [sx * tx, sy * ty, sw * tw, sh * th]
             labels[label_pos:4 + label_pos] = [1, 1, 1, 1]
             y_class_regr_coords.append(copy.deepcopy(coords))
