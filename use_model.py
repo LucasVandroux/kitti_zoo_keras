@@ -50,18 +50,19 @@ def use_model(args_):
     cfg['data_augmentation']['use_vertical_flips'] = False
     cfg['data_augmentation']['rot_90'] = False
 
+    cfg['export_folder'] = args_.export_folder
+
     # Add 'Background' class if doesn't exist already
     if 'Background' not in cfg['class_mapping']:
         cfg['class_mapping']['Background'] = len(cfg['class_mapping'])
-
-    print('-------------------------')
 
     model.predict(list_img_path, cfg)
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config_path', '-c', help='Path to configuration file.')
-    parser.add_argument('--img_path', '-p', help='Path to image folder or file')
+    parser.add_argument('--config_path', '-c', help='Path to the configuration file.')
+    parser.add_argument('--img_path', '-p', help='Path to images\' folder or file')
+    parser.add_argument('--export_folder', '-e', help='Path to folder where to export the image(s)')
     return parser.parse_args()
 
 

@@ -1,21 +1,22 @@
 from __future__ import division
+import argparse
 import os
+import os.path as path
 import cv2
 import numpy as np
-import pickle
 import time
+import importlib
 from keras import backend as K
 from keras.layers import Input
 from keras.models import Model
 from models.faster_rcnn import roi_helpers
-import argparse
-import os
+from utils.visualize import draw_boxes_and_label_on_image_cv2
+
 #import models.faster_rcnn.resnet as nn
-#from models.faster_rcnn.visualize import draw_boxes_and_label_on_image_cv2
 
 def format_img_size(img, cfg):
     """ formats the image size based on config """
-    img_min_side = float(cfg.im_size)
+    img_min_side = float(cfg['img']['min_side'])
     (height, width, _) = img.shape
 
     if width <= height:
@@ -34,10 +35,10 @@ def format_img_channels(img, cfg):
     """ formats the image channels based on config """
     img = img[:, :, (2, 1, 0)]
     img = img.astype(np.float32)
-    img[:, :, 0] -= cfg.img_channel_mean[0]
-    img[:, :, 1] -= cfg.img_channel_mean[1]
-    img[:, :, 2] -= cfg.img_channel_mean[2]
-    img /= cfg.img_scaling_factor
+    img[:, :, 0] -= cfg['img']['channel_mean'][0]
+    img[:, :, 1] -= cfg['img']['channel_mean'][1]
+    img[:, :, 2] -= cfg['img']['channel_mean'][2]
+    img /= cfg['img']['scaling_factor']
     img = np.transpose(img, (2, 0, 1))
     img = np.expand_dims(img, axis=0)
     return img
@@ -61,104 +62,144 @@ def get_real_coordinates(ratio, x1, y1, x2, y2):
 
 
 def predict_single_image(img_path, model_rpn, model_classifier_only, cfg, class_mapping):
-    st = time.time()
+
+    # Loading image
     img = cv2.imread(img_path)
     if img is None:
-        print('reading image failed.')
-        exit(0)
+        print(' ↳ ERROR: Impossible to read \'' + img_path + '\'.')
 
-    X, ratio = format_img(img, cfg)
-    if K.image_dim_ordering() == 'tf':
-        X = np.transpose(X, (0, 2, 3, 1))
-    # get the feature maps and output from the RPN
-    [Y1, Y2, F] = model_rpn.predict(X)
+    else:
+        start_time = time.time()
 
-    # this is result contains all boxes, which is [x1, y1, x2, y2]
-    result = roi_helpers.rpn_to_roi(Y1, Y2, cfg, K.image_dim_ordering(), overlap_thresh=0.7)
+        X, ratio = format_img(img, cfg)
+        if K.image_dim_ordering() == 'tf':
+            X = np.transpose(X, (0, 2, 3, 1))
 
-    # convert from (x1,y1,x2,y2) to (x,y,w,h)
-    result[:, 2] -= result[:, 0]
-    result[:, 3] -= result[:, 1]
-    bbox_threshold = 0.4
+        # get the feature maps and output from the RPN
+        [Y1, Y2, F] = model_rpn.predict(X)
 
-    # apply the spatial pyramid pooling to the proposed regions
-    boxes = dict()
-    for jk in range(result.shape[0] // cfg.num_rois + 1):
-        rois = np.expand_dims(result[cfg.num_rois * jk:cfg.num_rois * (jk + 1), :], axis=0)
-        if rois.shape[1] == 0:
-            break
-        if jk == result.shape[0] // cfg.num_rois:
-            # pad R
-            curr_shape = rois.shape
-            target_shape = (curr_shape[0], cfg.num_rois, curr_shape[2])
-            rois_padded = np.zeros(target_shape).astype(rois.dtype)
-            rois_padded[:, :curr_shape[1], :] = rois
-            rois_padded[0, curr_shape[1]:, :] = rois[0, 0, :]
-            rois = rois_padded
+        # this is result contains all boxes, which is [x1, y1, x2, y2]
+        result = roi_helpers.rpn_to_roi(Y1, Y2, cfg, K.image_dim_ordering(), overlap_thresh=cfg['rpn']['overlap_thresh'])
 
-        [p_cls, p_regr] = model_classifier_only.predict([F, rois])
+        # convert from (x1,y1,x2,y2) to (x,y,w,h)
+        result[:, 2] -= result[:, 0]
+        result[:, 3] -= result[:, 1]
 
-        for ii in range(p_cls.shape[1]):
-            if np.max(p_cls[0, ii, :]) < bbox_threshold or np.argmax(p_cls[0, ii, :]) == (p_cls.shape[2] - 1):
-                continue
+        # Spatial Pyramid Pooling to the proposed regions
+        boxes = dict()
+        for jk in range(result.shape[0] // cfg['rpn']['num_rois'] + 1):
+            rois = np.expand_dims(result[cfg['rpn']['num_rois'] * jk:cfg['rpn']['num_rois'] * (jk + 1), :], axis=0)
+            if rois.shape[1] == 0:
+                break
+            if jk == result.shape[0] // cfg['rpn']['num_rois']:
+                # pad R
+                curr_shape = rois.shape
+                target_shape = (curr_shape[0], cfg['rpn']['num_rois'], curr_shape[2])
+                rois_padded = np.zeros(target_shape).astype(rois.dtype)
+                rois_padded[:, :curr_shape[1], :] = rois
+                rois_padded[0, curr_shape[1]:, :] = rois[0, 0, :]
+                rois = rois_padded
 
-            cls_num = np.argmax(p_cls[0, ii, :])
-            if cls_num not in boxes.keys():
-                boxes[cls_num] = []
-            (x, y, w, h) = rois[0, ii, :]
-            try:
-                (tx, ty, tw, th) = p_regr[0, ii, 4 * cls_num:4 * (cls_num + 1)]
-                tx /= cfg.classifier_regr_std[0]
-                ty /= cfg.classifier_regr_std[1]
-                tw /= cfg.classifier_regr_std[2]
-                th /= cfg.classifier_regr_std[3]
-                x, y, w, h = roi_helpers.apply_regr(x, y, w, h, tx, ty, tw, th)
-            except Exception as e:
-                print(e)
-                pass
-            boxes[cls_num].append(
-                [cfg.rpn_stride * x, cfg.rpn_stride * y, cfg.rpn_stride * (x + w), cfg.rpn_stride * (y + h),
-                 np.max(p_cls[0, ii, :])])
-    # add some nms to reduce many boxes
-    for cls_num, box in boxes.items():
-        boxes_nms = roi_helpers.non_max_suppression_fast(box, overlap_thresh=0.5)
-        boxes[cls_num] = boxes_nms
-        print(class_mapping[cls_num] + ":")
-        for b in boxes_nms:
-            b[0], b[1], b[2], b[3] = get_real_coordinates(ratio, b[0], b[1], b[2], b[3])
-            print('{} prob: {}'.format(b[0: 4], b[-1]))
-    img = draw_boxes_and_label_on_image_cv2(img, class_mapping, boxes)
-    print('Elapsed time = {}'.format(time.time() - st))
-    cv2.imshow('image', img)
-    result_path = './results_images/{}.png'.format(os.path.basename(img_path).split('.')[0])
-    print('result saved into ', result_path)
-    cv2.imwrite(result_path, img)
-    #cv2.waitKey(0)
+            [p_cls, p_regr] = model_classifier_only.predict([F, rois])
 
-def predict():
-    class_mapping = {v: k for k, v in class_mapping.items()}
-    input_shape_img = (None, None, 3)
-    input_shape_features = (None, None, 1024)
+            for ii in range(p_cls.shape[1]):
+                if np.max(p_cls[0, ii, :]) < cfg['classifier']['bbox_threshold'] or np.argmax(p_cls[0, ii, :]) == (p_cls.shape[2] - 1):
+                    continue
 
-    img_input = Input(shape=input_shape_img)
+                cls_num = np.argmax(p_cls[0, ii, :])
+                if cls_num not in boxes.keys():
+                    boxes[cls_num] = []
+                (x, y, w, h) = rois[0, ii, :]
+                try:
+                    (tx, ty, tw, th) = p_regr[0, ii, 4 * cls_num:4 * (cls_num + 1)]
+                    tx /= cfg['classifier']['regr_std'][0]
+                    ty /= cfg['classifier']['regr_std'][1]
+                    tw /= cfg['classifier']['regr_std'][2]
+                    th /= cfg['classifier']['regr_std'][3]
+                    x, y, w, h = roi_helpers.apply_regr(x, y, w, h, tx, ty, tw, th)
+                except Exception as e:
+                    print(e)
+                    pass
+                boxes[cls_num].append(
+                    [cfg['rpn']['stride'] * x, cfg['rpn']['stride'] * y, cfg['rpn']['stride'] * (x + w), cfg['rpn']['stride'] * (y + h),
+                     np.max(p_cls[0, ii, :])])
+
+        # add some nms to reduce many boxes
+        for cls_num, box in boxes.items():
+            boxes_nms = roi_helpers.non_max_suppression_fast(box, overlap_thresh=cfg['nms']['overlap_thresh'])
+            boxes[cls_num] = boxes_nms
+            print(class_mapping[cls_num] + ":")
+
+            for b in boxes_nms:
+                b[0], b[1], b[2], b[3] = get_real_coordinates(ratio, b[0], b[1], b[2], b[3])
+                print('{} prob: {}'.format(b[0: 4], b[-1]))
+
+        processing_time = time.time() - start_time
+        img = draw_boxes_and_label_on_image_cv2(img, class_mapping, boxes)
+
+        print(' ↳ Processing time: {}'.format(processing_time))
+
+        # cv2.imshow('image', img)
+
+        result_path = path.join(cfg['export_folder'], path.basename(img_path))
+        cv2.imwrite(result_path, img)
+        print(' ↳ SUCCESS: Output image saved as \'' + result_path + '\'.')
+
+def predict(list_img_path, cfg):
+    print('------ LOAD MODEL -------')
+    # Inverse the class mapping
+    class_mapping = {v: k for k, v in cfg['class_mapping'].items()}
+
+    # --- INPUTS ---
+    img_input = Input(shape=(None, None, 3))
     roi_input = Input(shape=(cfg['rpn']['num_rois'], 4))
-    feature_map_input = Input(shape=input_shape_features)
+    feature_map_input = Input(shape=(None, None, 1024))
+
+    # --- MODEL ---
+    # Load module corresponding to chosen base network
+    module_base_network = 'models.' + cfg['model_name'] + '.base_network.' + cfg['base_network']
+    try:
+        nn = importlib.import_module(module_base_network)
+        print('SUCCESS: \'' + module_base_network + '\' has been imported.')
+    except Exception as e:
+        print(e)
+        sys.exit('ERROR: Impossible to import the module \'' + module_base_network + '\'.')
 
     shared_layers = nn.nn_base(img_input, trainable=True)
 
-    # define the RPN, built on the base layers
+    # Define RPN
     num_anchors = len(cfg['anchor_boxes']['scales']) * len(cfg['anchor_boxes']['ratios'])
     rpn_layers = nn.rpn(shared_layers, num_anchors)
+
+    # Define Classifier
     classifier = nn.classifier(feature_map_input, roi_input, cfg['rpn']['num_rois'], nb_classes=len(class_mapping),
                                trainable=True)
+
+    # Create Models
     model_rpn = Model(img_input, rpn_layers)
     model_classifier_only = Model([feature_map_input, roi_input], classifier)
 
     model_classifier = Model([feature_map_input, roi_input], classifier)
 
-    print('Loading weights from {}'.format(cfg['model_path']))
-    model_rpn.load_weights(cfg['model_path'], by_name=True)
-    model_classifier.load_weights(cfg['model_path'], by_name=True)
+    # --- LOAD WEIGHTS ---
+    try:
+        print('Loading weights from \'' + cfg['model_path'] + '\'...')
+        model_rpn.load_weights(cfg['model_path'], by_name=True)
+        print(' ↳ SUCCESS: RPN\'s weights loaded.')
+        model_classifier.load_weights(cfg['model_path'], by_name=True)
+        print(' ↳ SUCCESS: Classifier\'s weights loaded.')
+    except Exception as e:
+        print(e)
+        sys.exit('ERROR: Impossible to load trained model weights.')
 
+    # --- COMPILE ---
     model_rpn.compile(optimizer='sgd', loss='mse')
+    print('SUCCESS: RPN model has been compiled.')
     model_classifier.compile(optimizer='sgd', loss='mse')
+    print('SUCCESS: Classifier model has been compiled.')
+
+    print('----- PREDICTION(S) -----')
+
+    for img_path in list_img_path:
+        print('Processing: ' + img_path)
+        predict_single_image(img_path, model_rpn, model_classifier_only, cfg, class_mapping)
