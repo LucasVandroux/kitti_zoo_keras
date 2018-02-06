@@ -4,8 +4,8 @@
   "base_network": "resnet50",
   "folder_descriptor": "test",
   "train": {
-    "num_epochs": 3000,
-    "epoch_length": 1000
+    "num_epochs": 1,
+    "epoch_length": 1
   },
   "img": {
     "min_side": 600,
@@ -25,16 +25,23 @@
     "stride": 16,
     "min_overlap": 0.3,
     "max_overlap": 0.7,
-    "optimizer_lr": 1e-5
+    "optimizer_lr": 1e-5,
+    "overlap_thresh": 0.7,
+    "max_boxes": 300
   },
   "classifier": {
     "min_overlap": 0.1,
     "max_overlap": 0.5,
-    "optimizer_lr": 1e-5
+    "regr_std": [8.0, 8.0, 4.0, 4.0],
+    "optimizer_lr": 1e-5,
+    "bbox_threshold": 0.4
   },
   "std": {
-    "scaling": 4.0,
-    "classifier_regr": [8.0, 8.0, 4.0, 4.0]
+    "scaling": 4.0
+  },
+  "nms":{
+    "method": "classic",
+    "overlap_thresh": 0.5
   },
   "balanced_classes": 0
 }
