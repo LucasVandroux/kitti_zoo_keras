@@ -1,11 +1,12 @@
 {
   "verbose": 1,
+  "gpu": 0,
   "model_name": "faster_rcnn",
   "base_network": "resnet50",
   "folder_descriptor": "test",
   "train": {
-    "num_epochs": 1,
-    "epoch_length": 1
+    "num_epochs": 500,
+    "epoch_length": 1000
   },
   "img": {
     "min_side": 600,

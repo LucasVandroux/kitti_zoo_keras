@@ -25,6 +25,8 @@ def train(cfg, dataset, train_imgs, test_imgs):
     train_imgs  -- List of the images to use for training
     test_imgs   -- List of the images to use for testing
     """
+    CUDA_VISIBLE_DEVICES = cfg['gpu']
+
     print('----- MODEL CREATION -----')
     # =============================
     # === DEFINE NEURAL NETWORK ===
