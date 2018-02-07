@@ -66,7 +66,7 @@ def predict_single_image(img_path, model_rpn, model_classifier_only, cfg, class_
     # Loading image
     img = cv2.imread(img_path)
     if img is None:
-        print(' ↳ ERROR: Impossible to read \'' + img_path + '\'.')
+        print(' \'-> ERROR: Impossible to read \'' + img_path + '\'.')
 
     else:
         start_time = time.time()
@@ -137,13 +137,13 @@ def predict_single_image(img_path, model_rpn, model_classifier_only, cfg, class_
         processing_time = time.time() - start_time
         img = draw_boxes_and_label_on_image_cv2(img, class_mapping, boxes)
 
-        print(' ↳ Processing time: {}'.format(processing_time))
+        print(' \'-> Processing time: {}'.format(processing_time))
 
         # cv2.imshow('image', img)
 
         result_path = path.join(cfg['export_folder'], path.basename(img_path))
         cv2.imwrite(result_path, img)
-        print(' ↳ SUCCESS: Output image saved as \'' + result_path + '\'.')
+        print(' \'-> SUCCESS: Output image saved as \'' + result_path + '\'.')
 
 def predict(list_img_path, cfg):
     print('------ LOAD MODEL -------')
@@ -185,9 +185,9 @@ def predict(list_img_path, cfg):
     try:
         print('Loading weights from \'' + cfg['model_path'] + '\'...')
         model_rpn.load_weights(cfg['model_path'], by_name=True)
-        print(' ↳ SUCCESS: RPN\'s weights loaded.')
+        print(' \'-> SUCCESS: RPN\'s weights loaded.')
         model_classifier.load_weights(cfg['model_path'], by_name=True)
-        print(' ↳ SUCCESS: Classifier\'s weights loaded.')
+        print(' \'-> SUCCESS: Classifier\'s weights loaded.')
     except Exception as e:
         print(e)
         sys.exit('ERROR: Impossible to load trained model weights.')

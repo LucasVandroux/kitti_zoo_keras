@@ -99,9 +99,9 @@ def train(args_):
     train_imgs = [s for s in all_images if s['set'] == set_mapping['train'] or s['set'] == set_mapping['dev']]
     test_imgs = [s for s in all_images if s['set'] == set_mapping['test']]
 
-    print(' ↳ Classes count: ' + str(classes_count))
-    print(' ↳ Num train+dev: ' + str(len(train_imgs)))
-    print(' ↳ Num test: ' + str(len(test_imgs)))
+    print(' \'-> Classes count: ' + str(classes_count))
+    print(' \'-> Num train+dev: ' + str(len(train_imgs)))
+    print(' \'-> Num test: ' + str(len(test_imgs)))
 
     # TODO add the possibilty to train different models
 

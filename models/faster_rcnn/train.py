@@ -70,13 +70,13 @@ def train(cfg, dataset, train_imgs, test_imgs):
     try:
         print('Loading weights from \'' + base_net_weights + '\'...')
         model_rpn.load_weights(base_net_weights, by_name=True)
-        print(' ↳ SUCCESS: RPN\'s weights loaded.')
+        print(' \'-> SUCCESS: RPN\'s weights loaded.')
         model_classifier.load_weights(base_net_weights, by_name=True)
-        print(' ↳ SUCCESS: Classifier\'s weights loaded.')
+        print(' \'-> SUCCESS: Classifier\'s weights loaded.')
     except Exception as e:
         print(e)
         print('ERROR: Impossible to load pretrained model weights.')
-        print(' ↳ Pretrained weights can be downloaded from:  https://github.com/fchollet/keras/tree/master/keras/applications')
+        print(' \'-> Pretrained weights can be downloaded from:  https://github.com/fchollet/keras/tree/master/keras/applications')
 
     # ====================
     # === PREPARE DATA ===

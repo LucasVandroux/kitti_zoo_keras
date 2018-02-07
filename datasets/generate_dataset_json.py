@@ -81,7 +81,7 @@ def get_files(folder_path, file_extension):
     # Get set of files from the folder
     set_files = set([f[:-len(file_extension)] for f in os.listdir(path) if f.endswith(file_extension)])
 
-    print(' ↳ ' + str(len(set_files)) + ' files with extension \'' + file_extension + '\' in ' + path)
+    print(' \'-> ' + str(len(set_files)) + ' files with extension \'' + file_extension + '\' in ' + path)
 
     return path, set_files
 
@@ -176,7 +176,7 @@ def import_data(list_names, name_dataset, dataset_info):
     path_labels = dataset_info[name_dataset]['path_labels']
 
     print('Importing labels from ' + str(len(list_names)) + ' files:')
-    print(' ↳ Sets distribution: ' + str(sets_distribution))
+    print(' \'-> Sets distribution: ' + str(sets_distribution))
 
     # Initialize variables to store values to return
     list_data = []
@@ -259,8 +259,8 @@ def generate_json(export_file_path):
     dataset_info['main']['sets_count'] = main_sets_count.tolist()
     dataset_info['main']['mean_channels'] = np.mean(mean_channels, axis=0).tolist()
 
-    print(' ↳ Classes count: ' + str(main_classes_count))
-    print(' ↳ Sets count: ' + str(main_sets_count))
+    print(' \'-> Classes count: ' + str(main_classes_count))
+    print(' \'-> Sets count: ' + str(main_sets_count))
     print('SUCCESS: Main dataset imported.')
     print('-------------------------------')
 
@@ -268,8 +268,8 @@ def generate_json(export_file_path):
     print('----- IMPORT ADDITIONAL DATASET -----')
     if not path.exists(cfg.path_addi_images) and not path.exists(cfg.path_addi_labels):
         print('No Additional Dataset found:')
-        print(' ↳ Not Found: ' + cfg.path_addi_images)
-        print(' ↳ Not Found: ' + cfg.path_addi_labels)
+        print(' \'-> Not Found: ' + cfg.path_addi_images)
+        print(' \'-> Not Found: ' + cfg.path_addi_labels)
 
         # --- FINAL INFORMATION ---
         dataset_info['num_data'] = len(list_data)
@@ -299,8 +299,8 @@ def generate_json(export_file_path):
         dataset_info['addi']['sets_count'] = addi_sets_count.tolist()
         dataset_info['addi']['mean_channels'] = np.mean( addi_mean_channels, axis=0).tolist()
 
-        print(' ↳ Classes count: ' + str(addi_classes_count))
-        print(' ↳ Sets count: ' + str(addi_sets_count))
+        print(' \'-> Classes count: ' + str(addi_classes_count))
+        print(' \'-> Sets count: ' + str(addi_sets_count))
         print('SUCCESS: Additional dataset imported.')
 
         # --- MERGING INFORMATION ---
