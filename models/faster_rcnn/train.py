@@ -25,7 +25,8 @@ def train(cfg, dataset, train_imgs, test_imgs):
     train_imgs  -- List of the images to use for training
     test_imgs   -- List of the images to use for testing
     """
-    CUDA_VISIBLE_DEVICES = cfg['gpu']
+    # Set the GPU(s) to use
+    os.environ["CUDA_VISIBLE_DEVICE"] = str(cfg['gpu'])
 
     print('----- MODEL CREATION -----')
     # =============================
