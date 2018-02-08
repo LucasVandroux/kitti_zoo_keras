@@ -1,13 +1,16 @@
 import cv2
 import numpy as np
 import copy
-
+import time
 
 def augment(img_data, cfg, augment=True):
 	assert 'filepath' in img_data
 	assert 'bboxes' in img_data
 	assert 'width' in img_data
 	assert 'height' in img_data
+
+	# DEBUG
+	start_time = time.time()
 
 	img_data_aug = copy.deepcopy(img_data)
 
@@ -70,4 +73,7 @@ def augment(img_data, cfg, augment=True):
 
 	img_data_aug['width'] = img.shape[1]
 	img_data_aug['height'] = img.shape[0]
+
+	print(' \'-> Data Augmentation Processing time: {}'.format(time.time() - start_time))
+	
 	return img_data_aug, img
