@@ -3,6 +3,7 @@ import pdb
 import math
 from . import data_generators
 import copy
+import time
 
 
 def calc_iou(R, img_data, cfg):
@@ -159,6 +160,38 @@ def apply_regr_np(X, T):
         print(e)
         return X
 
+def apply_regr_np_2(X, T):
+    try:
+        x = X[0, :, :, :]
+        y = X[1, :, :, :]
+        w = X[2, :, :, :]
+        h = X[3, :, :, :]
+
+        tx = T[0, :, :, :]
+        ty = T[1, :, :, :]
+        tw = T[2, :, :, :]
+        th = T[3, :, :, :]
+
+        cx = x + w / 2.
+        cy = y + h / 2.
+        cx1 = tx * w + cx
+        cy1 = ty * h + cy
+
+        w1 = np.exp(tw.astype(np.float64)) * w
+        h1 = np.exp(th.astype(np.float64)) * h
+        x1 = cx1 - w1 / 2.
+        y1 = cy1 - h1 / 2.
+
+        x1 = np.round(x1)
+        y1 = np.round(y1)
+        w1 = np.round(w1)
+        h1 = np.round(h1)
+
+        return np.stack([x1, y1, w1, h1])
+
+    except Exception as e:
+        print(e)
+        return X
 
 def non_max_suppression_fast(boxes, overlap_thresh=0.9, max_boxes=300):
     # I changed this method with boxes already contains probabilities, so don't need prob send in this method
@@ -219,6 +252,11 @@ def non_max_suppression_fast(boxes, overlap_thresh=0.9, max_boxes=300):
 
 
 def rpn_to_roi(rpn_layer, regr_layer, cfg, dim_ordering, use_regr=True, max_boxes=300, overlap_thresh=0.9):
+
+    # # DEBUG
+    # start_time = time.time()
+    # use_regr = False
+
     regr_layer = regr_layer / cfg['std']['scaling']
 
     anchor_sizes = cfg['anchor_boxes']['scales']
@@ -231,6 +269,7 @@ def rpn_to_roi(rpn_layer, regr_layer, cfg, dim_ordering, use_regr=True, max_boxe
 
     elif dim_ordering == 'tf':
         (rows, cols) = rpn_layer.shape[1:3]
+
 
     curr_layer = 0
     if dim_ordering == 'tf':
@@ -270,6 +309,76 @@ def rpn_to_roi(rpn_layer, regr_layer, cfg, dim_ordering, use_regr=True, max_boxe
             A[3, :, :, curr_layer] = np.minimum(rows - 1, A[3, :, :, curr_layer])
 
             curr_layer += 1
+
+    # # DEBUG
+    # stop_time_1 = time.time()
+    # print(' \'-> RPN to ROI method 1 --> {}'.format(stop_time_1 - start_time))
+    # A_1 = A
+    #
+    # regr_layer = regr_layer / cfg['std']['scaling']
+    #
+    # anchor_sizes = np.asarray(cfg['anchor_boxes']['scales'])
+    # anchor_ratios = np.asarray(cfg['anchor_boxes']['ratios'])
+    #
+    # assert rpn_layer.shape[0] == 1
+    #
+    # (num_rows, num_cols, num_layers) = rpn_layer.shape[1:]
+    #
+    # A = np.zeros((4, num_rows, num_cols, num_layers))
+    #
+    # anchors_x_ = (np.repeat(anchor_sizes, len(anchor_ratios)) * np.tile(anchor_ratios[:,0], len(anchor_sizes))) / cfg['rpn']['stride']
+    # anchors_y_ = (np.repeat(anchor_sizes, len(anchor_ratios)) * np.tile(anchor_ratios[:,1], len(anchor_sizes))) / cfg['rpn']['stride']
+    #
+    # anchors_x = np.resize(np.repeat(anchors_x_, num_rows * num_cols), (num_rows, num_cols, num_layers))
+    # anchors_y = np.resize(np.repeat(anchors_y_, num_rows * num_cols), (num_rows, num_cols, num_layers))
+    #
+    # X, Y = np.meshgrid(np.arange(num_cols), np.arange(num_rows))
+    #
+    # A[0, :, :, :] = np.dstack([X]*num_layers) - anchor_x / 2
+    # A[1, :, :, :] = np.dstack([Y]*num_layers) - anchor_y / 2
+    # A[2, :, :, :] = anchor_x
+    # A[3, :, :, :] = anchor_y
+    #
+    # if np.array_equal(A_test, A):
+    #     print('SUCESS: both array are equal.')
+    # else:
+    #     print('ERROR: arrays are not equal: A_test' + str(A_1.shape) + ' A' + str(A.shape))
+    #     print(A_test[0, :, :, 0])
+    #     print('---------------')
+    #     print(A[0, :, :, 0])
+    #     print('---------------')
+    #     print(A_test[2, :, :, 0])
+    #     print('---------------')
+    #     print(A[2, :, :, 0])
+    #
+    # if use_regr:
+    #     regr = regr_layer[0, :, :, :]
+    #     rs = regr.shape
+    #     # Resize regr to get ready for the transpose in 4D
+    #     regr = np.resize(regr, (rs[0], rs[1], int(rs[2]/4), 4))
+    #     regr = np.transpose(regr, (3, 0, 1, 2))
+    #     A = apply_regr_np_2(A, regr)
+    #
+    # A[2, :, :, :] = np.maximum(1, A[2, :, :, :])
+    # A[3, :, :, :] = np.maximum(1, A[3, :, :, :])
+    # A[2, :, :, :] += A[0, :, :, :]
+    # A[3, :, :, :] += A[1, :, :, :]
+    #
+    # A[0, :, :, :] = np.maximum(0, A[0, :, :, :])
+    # A[1, :, :, :] = np.maximum(0, A[1, :, :, :])
+    # A[2, :, :, :] = np.minimum(cols - 1, A[2, :, :, :])
+    # A[3, :, :, :] = np.minimum(rows - 1, A[3, :, :, :])
+    #
+    # # DEBUG
+    # stop_time_2 = time.time()
+    # print(' \'-> RPN to ROI method 2 --> {}'.format(stop_time_2 - stop_time_1))
+    # if np.array_equal(A_1, A):
+    #     print('SUCESS: both array are equal.')
+    # else:
+    #     print('ERROR: arrays are not equal: A_1' + str(A_1.shape) + ' A' + str(A.shape))
+    #     print(A_1[0, :, :, 0])
+    #     print('---------------')
+    #     print(A[0, :, :, 0])
 
     all_boxes = np.reshape(A.transpose((0, 3, 1, 2)), (4, -1)).transpose((1, 0))
     all_probs = rpn_layer.transpose((0, 3, 1, 2)).reshape((-1))
