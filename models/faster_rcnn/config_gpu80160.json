@@ -4,8 +4,9 @@
   "model_name": "faster_rcnn",
   "base_network": "resnet50",
   "folder_descriptor": "test",
+  "path_net_weights": "/data2/lucas/Projects/kitti_zoo_keras/models/faster_rcnn/base_network/weights/faster_rcnn-resnet50.hdf5",
   "train": {
-    "num_epochs": 500,
+    "num_epochs": 90,
     "epoch_length": 1000
   },
   "img": {
