@@ -69,7 +69,12 @@ def train(cfg, dataset, train_imgs, test_imgs):
     model_all = Model([img_input, roi_input], rpn[:2] + classifier)
 
     # --- LOAD WEIGHTS ---
-    base_net_weights = path.join('models', cfg['model_name'], 'base_network', 'weights', nn.get_weight_path())
+    # If a different base net weights is already define in the config file use it.
+    if 'path_net_weights' in cfg.keys():
+        base_net_weights = cfg['path_net_weights']
+    else:
+        base_net_weights = path.join('models', cfg['model_name'], 'base_network', 'weights', nn.get_weight_path())
+
     try:
         print('Loading weights from \'' + base_net_weights + '\'...')
         model_rpn.load_weights(base_net_weights, by_name=True)
