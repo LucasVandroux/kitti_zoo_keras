@@ -297,7 +297,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
 
             except Exception as e:
                 print(e)
-                sys.exit('DEBUG: Exit when error to speed up debug.')
+                # sys.exit('DEBUG: Exit when error to speed up debug.')
                 print('Saving Model...')
                 model_all.save_weights(cfg['model_path'])
                 print('SUCCESS: Model saved in \'' + cfg['model_path'] + '\'.')
