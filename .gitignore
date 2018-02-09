@@ -4,3 +4,4 @@ additional/
 *.pyc
 .ipynb*
 *.h5
+models/faster_rcnn/trained_model/*
