@@ -14,7 +14,7 @@ def use_model(args_):
     accetped_img_ext = ('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')
 
     if os.path.isdir(img_path):
-        list_img_path = [os.path.join(path, img_name) for img_name in os.listdir(img_path) if img_name.lower().endswith(accetped_img_ext)]
+        list_img_path = [os.path.join(img_path, img_name) for img_name in os.listdir(img_path) if img_name.lower().endswith(accetped_img_ext)]
 
         if not list_img_path:
             sys.exit('ERROR: \'' + img_path + '\' doesn\'t contain images.')
