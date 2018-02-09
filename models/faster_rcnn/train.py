@@ -158,26 +158,26 @@ def train(cfg, dataset, train_imgs, test_imgs):
                               ' the ground truth boxes. Check RPN settings or keep training.')
 
                 # DEBUG
-                print('DEBUG: Time Repartition...')
+                # print('DEBUG: Time Repartition...')
                 start_time_debug = time.time()
 
                 X, Y, img_data = next(data_gen_train)
 
                 # DEBUG
                 end_time_data_gen = time.time()
-                print(' \'-> Total Data Generator Processing time: {}'.format(end_time_data_gen - start_time_debug))
+                #print(' \'-> Total Data Generator Processing time: {}'.format(end_time_data_gen - start_time_debug))
 
                 loss_rpn = model_rpn.train_on_batch(X, Y)
 
                 # DEBUG
                 end_time_rpn_train = time.time()
-                print(' \'-> RPN Train Processing time: {}'.format(end_time_rpn_train - end_time_data_gen))
+                #print(' \'-> RPN Train Processing time: {}'.format(end_time_rpn_train - end_time_data_gen))
 
                 P_rpn = model_rpn.predict_on_batch(X)
 
                 # DEBUG
                 end_time_rpn_predict = time.time()
-                print(' \'-> RPN Predict Processing time: {}'.format(end_time_rpn_predict - end_time_rpn_train))
+                # print(' \'-> RPN Predict Processing time: {}'.format(end_time_rpn_predict - end_time_rpn_train))
 
                 result = roi_helpers.rpn_to_roi(P_rpn[0], P_rpn[1], cfg, K.image_dim_ordering(), use_regr=True,
                                                 overlap_thresh=cfg['rpn']['overlap_thresh'],
@@ -185,14 +185,14 @@ def train(cfg, dataset, train_imgs, test_imgs):
 
                 # DEBUG
                 end_time_rpn_to_roi = time.time()
-                print(' \'-> RPN To ROI Processing time: {}'.format(end_time_rpn_to_roi - end_time_rpn_predict))
+                #print(' \'-> RPN To ROI Processing time: {}'.format(end_time_rpn_to_roi - end_time_rpn_predict))
 
                 # note: calc_iou converts from (x1,y1,x2,y2) to (x,y,w,h) format
                 X2, Y1, Y2, IouS = roi_helpers.calc_iou(result, img_data, cfg)
 
                 # DEBUG
                 end_time_calc_iou = time.time()
-                print(' \'-> Calculation IOU Processing time: {}'.format(end_time_calc_iou - end_time_rpn_to_roi))
+                #print(' \'-> Calculation IOU Processing time: {}'.format(end_time_calc_iou - end_time_rpn_to_roi))
 
                 if X2 is None:
                     rpn_accuracy_rpn_monitor.append(0)
@@ -239,14 +239,14 @@ def train(cfg, dataset, train_imgs, test_imgs):
 
                 # DEBUG
                 end_time_selected_samples = time.time()
-                print(' \'-> Select Samples Processing time: {}'.format(end_time_selected_samples - end_time_calc_iou))
+                #print(' \'-> Select Samples Processing time: {}'.format(end_time_selected_samples - end_time_calc_iou))
 
                 loss_class = model_classifier.train_on_batch([X, X2[:, sel_samples, :]],
                                                              [Y1[:, sel_samples, :], Y2[:, sel_samples, :]])
 
                 # DEBUG
                 end_time_classifier = time.time()
-                print(' \'-> Classifier Processing time: {}'.format(end_time_classifier - end_time_selected_samples))
+                # print(' \'-> Classifier Processing time: {}'.format(end_time_classifier - end_time_selected_samples))
 
                 losses[iter_num, 0] = loss_rpn[1]
                 losses[iter_num, 1] = loss_rpn[2]
@@ -261,7 +261,14 @@ def train(cfg, dataset, train_imgs, test_imgs):
                 progbar.update(iter_num,
                                [('rpn_cls', np.mean(losses[:iter_num, 0])), ('rpn_regr', np.mean(losses[:iter_num, 1])),
                                 ('detector_cls', np.mean(losses[:iter_num, 2])),
-                                ('detector_regr', np.mean(losses[:iter_num, 3]))])
+                                ('detector_regr', np.mean(losses[:iter_num, 3])),
+                                ('t_data_gen', (end_time_data_gen - start_time_debug)),
+                                ('t_rpn_train', (end_time_rpn_train - end_time_data_gen)),
+                                ('t_rpn_pred', (end_time_rpn_predict - end_time_rpn_train)),
+                                ('t_rpn_2_roi', (end_time_rpn_to_roi - end_time_rpn_predict)),
+                                ('t_iou_calc', (end_time_calc_iou - end_time_rpn_to_roi)),
+                                ('t_select_samples', (end_time_selected_samples - end_time_calc_iou)),
+                                ('t_classifier', (end_time_classifier - end_time_selected_samples))])
 
                 if iter_num == epoch_length:
                     loss_rpn_cls = np.mean(losses[:, 0])

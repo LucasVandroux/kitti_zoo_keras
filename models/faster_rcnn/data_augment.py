@@ -74,6 +74,6 @@ def augment(img_data, cfg, augment=True):
 	img_data_aug['width'] = img.shape[1]
 	img_data_aug['height'] = img.shape[0]
 
-	print(' \'-> Data Augmentation Processing time: {}'.format(time.time() - start_time))
-	
+	# print(' \'-> Data Augmentation Processing time: {}'.format(time.time() - start_time))
+
 	return img_data_aug, img
