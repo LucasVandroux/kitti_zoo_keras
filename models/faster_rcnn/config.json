@@ -6,7 +6,8 @@
   "folder_descriptor": "test",
   "train": {
     "num_epochs": 500,
-    "epoch_length": 1000
+    "epoch_length": 1000,
+    "save_iter": 10
   },
   "img": {
     "min_side": 600,
