@@ -74,6 +74,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
         base_net_weights = cfg['path_net_weights']
     else:
         base_net_weights = path.join('models', cfg['model_name'], 'base_network', 'weights', nn.get_weight_path())
+        cfg['path_net_weights'] = cfg['model_path']
 
     try:
         print('Loading weights from \'' + base_net_weights + '\'...')
@@ -125,18 +126,20 @@ def train(cfg, dataset, train_imgs, test_imgs):
     best_loss = np.Inf
 
     # --- Save Config ---
-    print('Saving configuration file...')
+    if not path.exists(cfg['export_folder']):
+        print('Saving configuration file...')
+        # Create folder to save the config file
+        os.makedirs(cfg['export_folder'])
+        print('SUCCESS: Created ' + cfg['export_folder'])
 
-    # Create folder to save the config file
-    os.makedirs(cfg['export_folder'])
-    print('SUCCESS: Created ' + cfg['export_folder'])
+        # Save config file
+        path_config_file = path.join(cfg['export_folder'], 'config.json')
+        with open(path_config_file, 'w') as outfile:
+            json.dump(cfg, outfile, indent=2)
 
-    # Save config file
-    path_config_file = path.join(cfg['export_folder'], 'config.json')
-    with open(path_config_file, 'w') as outfile:
-        json.dump(cfg, outfile, indent=2)
-
-    print('SUCCESS: Configuration file saved to ' + path_config_file)
+        print('SUCCESS: Configuration file saved to ' + path_config_file)
+    else:
+        print('\'' + cfg['export_folder'] + '\' already exists.')
 
     # Create file to save losses
     path_losses_file = path.join(cfg['export_folder'], 'losses.txt')
@@ -149,19 +152,30 @@ def train(cfg, dataset, train_imgs, test_imgs):
                  "curr_loss " + \
                  "time" + "\n"
 
-    with open(path_losses_file, "a") as text_file:
-        text_file.write(str_losses_header)
+    if not path.exists(path_losses_file):
+        with open(path_losses_file, "a") as text_file:
+            text_file.write(str_losses_header)
+        num_epoch_done = 0
+    else:
+        list_epoch = []
+        with open(path_losses_file) as f:
+            for line in f:
+                # Parse line
+                line_p = line.strip().split(' ')
+                list_epoch.append(line_p[0])
 
+        num_epoch_done = int(list_epoch[-1])
     # class_mapping_inv = {v: k for k, v in class_mapping.items()}
 
     print('-------- TRAINING --------')
 
     # vis = True
 
-    for epoch_num in range(num_epochs):
+    for epoch_num in range(num_epochs - num_epoch_done):
 
+        curr_epoch_num = epoch_num + num_epoch_done + 1
         progbar = generic_utils.Progbar(epoch_length)
-        print('Epoch {}/{}'.format(epoch_num + 1, num_epochs))
+        print('Epoch {}/{}'.format(curr_epoch_num, num_epochs))
 
         while True:
             try:
@@ -310,7 +324,7 @@ def train(cfg, dataset, train_imgs, test_imgs):
                         print('Elapsed time: {}'.format(time.time() - start_time))
 
                     # Save losses in text file
-                    str_losses = str(epoch_num + 1) + " " + \
+                    str_losses = str(curr_epoch_num) + " " + \
                                  str(mean_overlapping_bboxes) + " " + \
                                  str(loss_rpn_cls) + " " + \
                                  str(loss_rpn_regr) + " " + \
@@ -333,7 +347,6 @@ def train(cfg, dataset, train_imgs, test_imgs):
                         model_all.save_weights(cfg['model_path'])
 
                     # Save the model if number of iterations
-                    curr_epoch_num = epoch_num + 1
                     if 'save_iter' in cfg['train']:
                         if curr_epoch_num % cfg['train']['save_iter'] == 0:
                             print('Saving Model...')

@@ -10,6 +10,13 @@ import sys
 import random
 import models.faster_rcnn.train as faster_rcnn
 
+def yes_or_no(question):
+    while "the answer is invalid":
+        reply = str(input(question+' (y/n): ')).lower().strip()
+        if reply[:1] == 'y':
+            return True
+        if reply[:1] == 'n':
+            return False
 
 def train(args_):
     """
@@ -53,8 +60,13 @@ def train(args_):
 
     # Test if the folder to save the new model exists already
     export_folder_path = path.join(trained_model_folder_path, (cfg['model_name'] + '-' + cfg['base_network'] + '-' + cfg['folder_descriptor']))
+
     if path.isdir(export_folder_path):
-        sys.exit('ERROR: \'' + export_folder_path + '\' already exists, please change \'folder_descriptor\' in config file.')
+        if not yes_or_no('WARNING: \'' + export_folder_path + '\' already exists. Do you want to continue?'):
+            sys.exit(' \'-> Exiting, please change \'folder_descriptor\' in config file.')
+
+    # if path.isdir(export_folder_path):
+    #     sys.exit('ERROR: \'' + export_folder_path + '\' already exists, please change \'folder_descriptor\' in config file.')
 
     # Add path to export the weights and config file of the model
     cfg['export_folder'] = path.abspath(export_folder_path)
