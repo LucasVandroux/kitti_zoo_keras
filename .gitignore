@@ -5,3 +5,5 @@ additional/
 .ipynb*
 *.h5
 models/faster_rcnn/trained_model/*
+*dataset.json
+models/faster_rcnn/base_network/weights/*
