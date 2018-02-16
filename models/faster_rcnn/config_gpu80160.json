@@ -3,10 +3,10 @@
   "gpu": 0,
   "model_name": "faster_rcnn",
   "base_network": "resnet50",
-  "folder_descriptor": "test",
+  "folder_descriptor": "KITTI-GTA-100epoch",
   "path_net_weights": "/data2/lucas/Projects/kitti_zoo_keras/models/faster_rcnn/base_network/weights/faster_rcnn-resnet50.hdf5",
   "train": {
-    "num_epochs": 90,
+    "num_epochs": 100,
     "epoch_length": 1000,
     "save_iter": 10
   },
