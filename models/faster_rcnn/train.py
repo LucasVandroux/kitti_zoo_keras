@@ -138,6 +138,20 @@ def train(cfg, dataset, train_imgs, test_imgs):
 
     print('SUCCESS: Configuration file saved to ' + path_config_file)
 
+    # Create file to save losses
+    path_losses_file = path.join(cfg['export_folder'], 'losses.txt')
+    str_losses_header = "epoch_num " + \
+                 "mean_overlapping_bboxes " + \
+                 "loss_rpn_cls " + \
+                 "loss_rpn_regr " + \
+                 "loss_class_cls " + \
+                 "loss_class_regr " + \
+                 "curr_loss " + \
+                 "time" + "\n"
+
+    with open(path_losses_file, "a") as text_file:
+        text_file.write(str_losses_header)
+
     # class_mapping_inv = {v: k for k, v in class_mapping.items()}
 
     print('-------- TRAINING --------')
@@ -295,6 +309,19 @@ def train(cfg, dataset, train_imgs, test_imgs):
                         print('Loss Detector regression: {}'.format(loss_class_regr))
                         print('Elapsed time: {}'.format(time.time() - start_time))
 
+                    # Save losses in text file
+                    str_losses = str(epoch_num + 1) + " " + \
+                                 str(mean_overlapping_bboxes) + " " + \
+                                 str(loss_rpn_cls) + " " + \
+                                 str(loss_rpn_regr) + " " + \
+                                 str(loss_class_cls) + " " + \
+                                 str(loss_class_regr) + " " + \
+                                 str(loss_rpn_cls + loss_rpn_regr + loss_class_cls + loss_class_regr) + " " + \
+                                 str(time.time() - start_time) + "\n"
+
+                    with open(path_losses_file, "a") as text_file:
+                        text_file.write(str_losses)
+
                     curr_loss = loss_rpn_cls + loss_rpn_regr + loss_class_cls + loss_class_regr
                     iter_num = 0
                     start_time = time.time()
@@ -304,6 +331,20 @@ def train(cfg, dataset, train_imgs, test_imgs):
                             print('Total loss decreased from {} to {}, saving weights'.format(best_loss, curr_loss))
                         best_loss = curr_loss
                         model_all.save_weights(cfg['model_path'])
+
+                    # Save the model if number of iterations
+                    curr_epoch_num = epoch_num + 1
+                    if 'save_iter' in cfg['train']:
+                        if curr_epoch_num % cfg['train']['save_iter'] == 0:
+                            print('Saving Model...')
+                            model_path_epoch = cfg['model_path'][:-5] + '_epoch-' + str(curr_epoch_num) + cfg['model_path'][-5:]
+                            model_all.save_weights(model_path_epoch)
+                            print('SUCCESS: Model saved in \'' + model_path_epoch + '\'.')
+                    elif (curr_epoch_num) % 2 == 0:
+                        print('Saving Model...')
+                        model_path_epoch = cfg['model_path'][:-5] + '_epoch-' + str(curr_epoch_num) + cfg['model_path'][-5:]
+                        model_all.save_weights(model_path_epoch)
+                        print('SUCCESS: Model saved in \'' + model_path_epoch + '\'.')
 
                     break
 
