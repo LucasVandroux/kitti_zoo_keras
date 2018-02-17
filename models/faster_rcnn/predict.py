@@ -12,6 +12,7 @@ from keras.layers import Input
 from keras.models import Model
 from models.faster_rcnn import roi_helpers
 from utils.visualize import draw_boxes_and_label_on_image_cv2
+import csv
 
 #import models.faster_rcnn.resnet as nn
 
@@ -125,6 +126,7 @@ def predict_single_image(img_path, model_rpn, model_classifier_only, cfg, class_
                     [cfg['rpn']['stride'] * x, cfg['rpn']['stride'] * y, cfg['rpn']['stride'] * (x + w), cfg['rpn']['stride'] * (y + h),
                      np.max(p_cls[0, ii, :])])
 
+        pred_list = []
         # add some nms to reduce many boxes
         for cls_num, box in boxes.items():
             boxes_nms = roi_helpers.non_max_suppression_fast(box, overlap_thresh=cfg['nms']['overlap_thresh'])
@@ -134,6 +136,8 @@ def predict_single_image(img_path, model_rpn, model_classifier_only, cfg, class_
             for b in boxes_nms:
                 b[0], b[1], b[2], b[3] = get_real_coordinates(ratio, b[0], b[1], b[2], b[3])
                 print('{} prob: {}'.format(b[0: 4], b[-1]))
+
+                pred_list.append([class_mapping[cls_num]] + b.tolist())
 
         processing_time = time.time() - start_time
         img = draw_boxes_and_label_on_image_cv2(img, class_mapping, boxes)
@@ -145,6 +149,12 @@ def predict_single_image(img_path, model_rpn, model_classifier_only, cfg, class_
         result_path = path.join(cfg['export_folder'], path.basename(img_path))
         cv2.imwrite(result_path, img)
         print(' \'-> SUCCESS: Output image saved as \'' + result_path + '\'.')
+
+        # Write predictions in csv file
+        pred_path = path.join(cfg['export_folder'], path.basename(img_path)[:-4] + '.csv')
+        with open(pred_path, "w") as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            writer.writerows(pred_list)
 
 def predict(list_img_path, cfg):
     print('------ LOAD MODEL -------')
